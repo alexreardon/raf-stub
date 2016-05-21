@@ -1,0 +1,24 @@
+{
+  "name": "raf-stub",
+  "version": "0.0.1",
+  "description": "A testing friendly version of requestAnimationFrame",
+  "main": "index.js",
+  "dependencies": {},
+  "devDependencies": {
+    "babel-core": "^6.9.0",
+    "babel-preset-es2015": "^6.9.0",
+    "chai": "^3.5.0",
+    "mocha": "^2.4.5",
+    "sinon": "^1.17.4"
+  },
+  "scripts": {
+    "test": "mocha test.js --compilers js:babel-core/register"
+  },
+  "keywords": [
+    "raf",
+    "requestAnimationFrame",
+    "test"
+  ],
+  "author": "Alex Reardon <alexreardon@gmail.com>",
+  "license": "MIT"
+}
