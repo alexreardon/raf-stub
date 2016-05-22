@@ -1,23 +1,29 @@
 {
   "name": "raf-stub",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "A testing friendly version of requestAnimationFrame",
   "main": "index.js",
   "dependencies": {},
   "devDependencies": {
     "babel-core": "^6.9.0",
+    "babel-eslint": "^6.0.4",
     "babel-preset-es2015": "^6.9.0",
     "chai": "^3.5.0",
+    "eslint": "^2.10.2",
     "mocha": "^2.4.5",
     "sinon": "^1.17.4"
   },
   "scripts": {
-    "test": "mocha test.js --compilers js:babel-core/register"
+    "test": "npm run lint && mocha test.js --compilers js:babel-core/register",
+    "lint": "eslint *.js",
+    "lint-fix": "eslint *.js --fix"
   },
   "keywords": [
     "raf",
     "requestAnimationFrame",
-    "test"
+    "cancelAnimationFrame",
+    "test",
+    "mocha"
   ],
   "author": "Alex Reardon <alexreardon@gmail.com>",
   "license": "MIT"

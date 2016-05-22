@@ -1,14 +1,33 @@
-import * as api from './index';
+import factory, {enhance} from './index';
 import sinon from 'sinon';
 import {expect} from 'chai';
 
-describe('api', () => {
+describe('createStub', () => {
+    it('should allow for different stub namespaces', () => {
+        const api1 = factory();
+        const api2 = factory();
+        const callback1 = sinon.stub();
+        const callback2 = sinon.stub();
+
+        api1.add(callback1);
+        api2.add(callback2);
+
+        api1.flush();
+
+        expect(callback1.called).to.be.true;
+        expect(callback2.called).to.be.false;
+    });
+});
+
+describe('instance', () => {
+    let api;
+
     beforeEach(() => {
-       // sinon.stub(global, 'requestAnimationFrame', api.add)
+        api = factory();
     });
 
     afterEach(() => {
-        api.flush();
+        api.reset();
     });
 
     describe('add', () => {
@@ -114,6 +133,55 @@ describe('api', () => {
             expect(parent.calledOnce).to.be.true;
             expect(child.called).to.be.true;
         });
+
+        describe('"this" context', () => {
+            function foo() {
+                return this.a;
+            }
+
+            it('should respect implicit bindings', () => {
+                const bar = {
+                    a: 5,
+                    foo
+                };
+                const callback = sinon.spy(function () {
+                    return bar.foo();
+                });
+
+                api.add(callback);
+                api.flush();
+
+                expect(callback.firstCall.returnValue).to.equal(bar.a);
+            });
+
+            it('should respect explicit bindings', () => {
+                const bar = {
+                    a: 5
+                };
+                const callback = sinon.spy(function () {
+                    return foo.call(bar);
+                });
+
+                api.add(callback);
+                api.flush();
+
+                expect(callback.firstCall.returnValue).to.equal(bar.a);
+            });
+
+            it('should respect hard bindings', () => {
+                const bar = {
+                    a: 5
+                };
+                const callback = sinon.spy(function () {
+                    return foo.bind(bar)();
+                });
+
+                api.add(callback);
+                api.flush();
+
+                expect(callback.firstCall.returnValue).to.equal(bar.a);
+            });
+        });
     });
 
     describe('flush', () => {
@@ -144,21 +212,86 @@ describe('api', () => {
 
     });
 
-    describe('polyfill', () => {
-        it('should polyfill "requestAnimationFrame" onto the root', () => {
-            const root = {};
+    describe('reset', () => {
+        it('should remove all callbacks in the current frame without calling them', () => {
+            const callback = sinon.stub();
 
-            api.polyfill(root);
+            api.add(callback);
+            api.reset();
 
-            expect(root.requestAnimationFrame).to.equal(api.add);
+            // would usually call the function
+            api.flush();
+
+            expect(callback.called).to.be.false;
         });
 
-        it('should polyfill "cancelAnimationFrame" onto the root', () => {
-            const root = {};
+        it('should remove all callbacks in the current future frames without calling them', () => {
+            const parent = sinon.spy(function () {
+                api.add(child);
+            });
+            const child = sinon.stub();
 
-            api.polyfill(root);
+            api.add(parent);
+            api.reset();
 
-            expect(root.cancelAnimationFrame).to.equal(api.remove);
+            expect(parent.called).to.be.false;
+            expect(child.called).to.be.false;
         });
+    });
+});
+
+describe('enhance', () => {
+    it('should replace root.requestAnimationFrame with "add"', () => {
+        const root = {};
+        const callback = sinon.stub();
+
+        enhance(root);
+        root.requestAnimationFrame(callback);
+        root.requestAnimationFrame.flush();
+
+        expect(callback.called).to.be.true;
+    });
+    it('should replace root.cancelAnimationFrame with "remove"', () => {
+        const root = {};
+        const callback = sinon.stub();
+
+        enhance(root);
+        const id = root.requestAnimationFrame(callback);
+        root.cancelAnimationFrame(id);
+        root.requestAnimationFrame.flush();
+
+        expect(callback.called).to.be.false;
+    });
+
+    it('should add "step" to the root.requestAnimationFrame', () => {
+        const root = {};
+        const callback = sinon.stub();
+
+        enhance(root);
+        root.requestAnimationFrame(callback);
+        root.requestAnimationFrame.step();
+
+        expect(callback.called).to.be.true;
+    });
+    it('should add "flush" to the root.requestAnimationFrame', () => {
+        const root = {};
+        const callback = sinon.stub();
+
+        enhance(root);
+        root.requestAnimationFrame(callback);
+        root.requestAnimationFrame.flush();
+
+        expect(callback.called).to.be.true;
+    });
+    it('should add "reset" to the root.requestAnimationFrame', () => {
+        const root = {};
+        const callback = sinon.stub();
+
+        enhance(root);
+        root.requestAnimationFrame(callback);
+        root.requestAnimationFrame.reset();
+        root.requestAnimationFrame.flush();
+
+        expect(callback.called).to.be.false;
     });
 });
