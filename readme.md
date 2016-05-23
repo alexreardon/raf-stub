@@ -1,5 +1,7 @@
 # Mock Stub
 
+[![Build Status](https://travis-ci.org/alexreardon/raf-stub.svg?branch=master)](https://travis-ci.org/alexreardon/raf-stub)
+
 Accurate and predictable testing of `requestAnimationFrame` and `cancelAnimationFrame`.
 
 This is **not** designed to be a polyfill and is only intended for testing code.

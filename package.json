@@ -14,7 +14,7 @@
     "sinon": "^1.17.4"
   },
   "scripts": {
-    "test": "npm run lint && mocha test.js --compilers js:babel-core/register",
+    "test": "eslint *.js && mocha test.js --compilers js:babel-core/register",
     "lint": "eslint *.js",
     "lint-fix": "eslint *.js --fix"
   },
