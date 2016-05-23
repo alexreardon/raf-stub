@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/alexreardon/raf-stub.svg?branch=master)](https://travis-ci.org/alexreardon/raf-stub) [![codecov](https://codecov.io/gh/alexreardon/raf-stub/branch/master/graph/badge.svg)](https://codecov.io/gh/alexreardon/raf-stub)
 
-**Warning** still a work a work in progress. Currently this library has been built using es6 modules but it does not have a good reuse story using npm. I am currently investigating a better solution
+**Warning:** this still a work a work in progress. Currently this library has been built using es6 modules but it does not have a good reuse story using npm. I am currently investigating a better solution
 
 Accurate and predictable testing of `requestAnimationFrame` and `cancelAnimationFrame`.
 
@@ -380,9 +380,196 @@ describe('app', () => {
 ## Tests for `raf-stub`
 To run the tests for this library simply execute:
 
-```js
+```
 npm install
 npm test
 ```
+
+## Rationale for library
+
+Let's say you wanted to test some code that uses `requestAnimationFrame`. How would you do it? Here is an example that uses `sinon` and `setTimeout`. You do not need to use `sinon` but it lets you write sequential code rather than needing to use nested timeouts.
+
+```js
+describe('app', () => {
+    let clock;
+
+    beforeEach(() => {
+        clock = sinon.useFakeTimers();
+        sinon.stub(window, 'requestAnimationFrame', setTimeout);
+        sinon.stub(window, 'cancelAnimationFrame', clearTimeout);
+    });
+
+    afterEach(() => {
+        clock.restore();
+        window.requestAnimationFrame.restore();
+        window.cancelAnimationFrame.restore();
+    });
+
+    it('should allow us to execute requestAnimationFrame when we want', () => {
+        const callback = () => console.log('success');
+
+        requestAnimationFrame(callback);
+
+        // fast forward set timeout
+        sinon.tick();
+
+        // console.log => 'success'
+    });
+});
+```
+
+We are all good right? Well sort of. For this basic example `setTimeout` was sufficient. Let's have a look at a few more cases where `setTimeout` is not ideal.
+
+*The following examples will assume the same setup as the above example unless otherwise specified*
+
+### Case 1: mixture of `setTimeout` and `requestAnimationFrame`
+
+```js
+it('should allow us to execute requestAnimationFrame when we want', () => {
+    const callback = () => {
+        setTimeout(() => {
+            console.log('success');
+        });
+    }
+
+    requestAnimationFrame(callback);
+
+    // fast forward requestAnimationFrame
+    sinon.tick();
+
+    // *crickets*
+
+    sinon.tick();
+
+    // console.log => 'success'
+});
+```
+
+Because both `setTimeout` and `requestAnimationFrame` use `setTimeout` the way we **step** through an animation frame is the same way we **step** through a timeout. This can become hard to reason about in larger functions where there may be a large combination of `setTimeout` and `requestAnimationFrame` code. Having a shared mechanism is prone to misunderstandings. This is solved by `stub.step()` and `stub.flush()`
+
+### Case 2: nested requestAnimationFrames
+```js
+it('should allow us to execute requestAnimationFrame when we want', () => {
+    const callback = () => {
+        requestAnimationFrame(() => {
+            console.log('success');
+        });
+    }
+
+    requestAnimationFrame(callback);
+
+    // fast forward requestAnimationFrame
+    sinon.tick();
+
+    // *crickets*
+
+    // fast forward requestAnimationFrame
+    sinon.tick();
+
+    // console.log => 'success'
+});
+```
+
+This was not too hard. But something to notice is that the nest code is identicial to the previous example. We are relying on comments to understand what is going on.
+
+Let's go a bit deeper:
+
+```js
+it('should allow us to execute requestAnimationFrame when we want', () => {
+    const render = (iterations = 0) => {
+        if(iterations > 100 * Math.random()) {
+            return console.log('done');
+        }
+        return requestAnimationFrame(() => {
+            render(iterations + 1);
+        });
+    };
+
+    render();
+
+
+    // step through the animation frames
+    sinon.tick(100000);
+
+    // console.log => 'success'
+});
+```
+
+The problem we have here is that we do not know exactly how many times `render` will call `requestAnimationFrame`. To get around this we just tick the `clock` forward some really large amount. This feels like a hack. Also, in some cases you might use a number that is big enough sometimes but not others. This can lead to flakey tests. This is solved by `stub.flush()`
+
+### Case 3: `setTimeout` leakage
+
+```js
+it('test 1', () => {
+    const callback = () => {
+        console.log('test 1: first frame');
+        requestAnimationFrame(() => {
+            console.log('test 1: second frame');
+        });
+    };
+
+    requestAnimationFrame(callback);
+
+    // console.log => 'test 1: first frame'
+
+    // note the second frame was not cleared
+});
+
+it('test 2', () => {
+    const callback = () => console.log('test 2: first frame');
+
+    requestAnimationFrame(callback);
+
+    // console.log => 'test 1: second frame'
+    // console.log => 'test 2: first frame'
+});
+```
+
+What happened here? We did not clear out all of the`requestAnimationFrame`'s in the original test and they leaked into our second test. We need to `flush` the `setTimeout` queue before running `test 2`.
+
+```js
+describe('app', () => {
+    let clock;
+
+    beforeEach(() => {
+        clock = sinon.useFakeTimers();
+        sinon.stub(window, 'requestAnimationFrame', setTimeout);
+        sinon.stub(window, 'cancelAnimationFrame', clearTimeout);
+    });
+
+    afterEach(() => {
+        // need to flush out the clock
+        clock.tick(1000000);
+        clock.restore();
+        window.requestAnimationFrame.restore();
+        window.cancelAnimationFrame.restore();
+    });
+
+    it('test 1', () => {
+        const callback = () => {
+            console.log('test 1: first frame');
+            requestAnimationFrame(() => {
+                console.log('test 1: second frame');
+            });
+        };
+
+        requestAnimationFrame(callback);
+    
+        // console.log => 'test 1: first frame'
+
+        // note the second frame was not cleared
+    });
+
+    it('test 2', () => {
+        const callback = () => console.log('test 2: first frame');
+
+        requestAnimationFrame(callback);
+
+        // console.log => 'test 1: second frame'
+    });
+});
+```
+
+We got around this issue by flushing the clock. We did this by calling `clock.tick(some big number)`. This suffers from the problem that existed a previous example: you cannot be sure that you have actually flushed the queue.
 
 
