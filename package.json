@@ -14,9 +14,9 @@
     "sinon": "^1.17.4"
   },
   "scripts": {
-    "test": "eslint *.js && mocha test.js --compilers js:babel-core/register",
-    "lint": "eslint *.js",
-    "lint-fix": "eslint *.js --fix"
+    "test": "./node_modules/.bin/eslint *.js && ./node_modules/.bin/mocha test.js --compilers js:babel-core/register",
+    "lint": "./node_modules/.bin/eslint *.js",
+    "lint-fix": "./node_modules/.bin/eslint *.js --fix"
   },
   "keywords": [
     "raf",
