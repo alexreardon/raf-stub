@@ -437,8 +437,7 @@ it('should allow us to execute requestAnimationFrame when we want', () => {
     // fast forward requestAnimationFrame
     sinon.tick();
 
-    // *crickets*
-
+    // fast forward setTimeout
     sinon.tick();
 
     // console.log => 'success'
@@ -460,8 +459,6 @@ it('should allow us to execute requestAnimationFrame when we want', () => {
 
     // fast forward requestAnimationFrame
     sinon.tick();
-
-    // *crickets*
 
     // fast forward requestAnimationFrame
     sinon.tick();
@@ -495,7 +492,7 @@ it('should allow us to execute requestAnimationFrame when we want', () => {
 });
 ```
 
-The problem we have here is that we do not know exactly how many times `render` will call `requestAnimationFrame`. To get around this we just tick the `clock` forward some really large amount. This feels like a hack. Also, in some cases you might use a number that is big enough sometimes but not others. This can lead to flakey tests. This is solved by `stub.flush()`
+The problem we have here is that we do not know exactly how many times `render` will call `requestAnimationFrame`. To get around this we just tick the `clock` forward some really large amount. This feels like a hack. Also, you might use a number that is big enough in some circumstances but not others. This can lead to flakey tests. This is solved by `stub.flush()`
 
 ### Case 3: `setTimeout` leakage
 
@@ -540,6 +537,9 @@ describe('app', () => {
     afterEach(() => {
         // need to flush out the clock
         clock.tick(1000000);
+
+        // console.log => 'test 1: second frame'
+
         clock.restore();
         window.requestAnimationFrame.restore();
         window.cancelAnimationFrame.restore();
@@ -570,6 +570,6 @@ describe('app', () => {
 });
 ```
 
-We got around this issue by flushing the clock. We did this by calling `clock.tick(some big number)`. This suffers from the problem that existed a previous example: you cannot be sure that you have actually flushed the queue.
+We got around this issue by flushing the clock. We did this by calling `clock.tick(some big number)`. This suffers from the problem that existed a previous example: you cannot be sure that you have actually emptied the queue. You might have noticed a strange `console.log` in the `afterEach` function. This is because when you emptied the `setTimeout` queue with `clock.tick` all of the callbacks executed. In most cases this should be okay, but it is not idea. `stub.reset()` allows us to empty a queue **without** needing to execute any of the callbacks.
 
 
