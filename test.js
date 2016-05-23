@@ -116,10 +116,10 @@ describe('instance', () => {
         });
 
         it('should execute nested calls in the next frame', () => {
+            const child = sinon.stub();
             const parent = sinon.spy(function () {
                 api.add(child);
             });
-            const child = sinon.stub();
 
             api.add(parent);
             api.step();
