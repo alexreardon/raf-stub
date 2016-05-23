@@ -1,7 +1,6 @@
-# Mock Stub
+# raf-stub
 
 [![Build Status](https://travis-ci.org/alexreardon/raf-stub.svg?branch=master)](https://travis-ci.org/alexreardon/raf-stub) [![codecov](https://codecov.io/gh/alexreardon/raf-stub/branch/master/graph/badge.svg)](https://codecov.io/gh/alexreardon/raf-stub)
-
 
 Accurate and predictable testing of `requestAnimationFrame` and `cancelAnimationFrame`.
 
