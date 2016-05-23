@@ -2,6 +2,8 @@
 
 [![Build Status](https://travis-ci.org/alexreardon/raf-stub.svg?branch=master)](https://travis-ci.org/alexreardon/raf-stub) [![codecov](https://codecov.io/gh/alexreardon/raf-stub/branch/master/graph/badge.svg)](https://codecov.io/gh/alexreardon/raf-stub)
 
+**Warning** still a work a work in progress. Currently this library has been built using es6 modules but it does not have a good reuse story using npm. I am currently investigating a better solution
+
 Accurate and predictable testing of `requestAnimationFrame` and `cancelAnimationFrame`.
 
 This is **not** designed to be a polyfill and is only intended for testing code.
