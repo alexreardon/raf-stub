@@ -522,7 +522,7 @@ it('test 2', () => {
 });
 ```
 
-What happened here? We did not clear out all of the`requestAnimationFrame`'s in the original test and they leaked into our second test. We need to `flush` the `setTimeout` queue before running `test 2`.
+What happened here? We did not clear out all of the`requestAnimationFrame`'s in the original test and they leaked into our second test. We need to `reset` the `setTimeout` queue before running `test 2`.
 
 ```js
 describe('app', () => {
@@ -535,7 +535,7 @@ describe('app', () => {
     });
 
     afterEach(() => {
-        // need to flush out the clock
+        // need to reset the clock (this actually flushes the clock)
         clock.tick(1000000);
 
         // console.log => 'test 1: second frame'
@@ -570,6 +570,6 @@ describe('app', () => {
 });
 ```
 
-We got around this issue by flushing the clock. We did this by calling `clock.tick(some big number)`. This suffers from the problem that existed a previous example: you cannot be sure that you have actually emptied the queue. You might have noticed a strange `console.log` in the `afterEach` function. This is because when you emptied the `setTimeout` queue with `clock.tick` all of the callbacks executed. In most cases this should be okay, but it is not idea. `stub.reset()` allows us to empty a queue **without** needing to execute any of the callbacks.
+We got around this issue by flushing the clock. We did this by calling `clock.tick(some big number)`. This suffers from the problem that existed a previous example: you cannot be sure that you have actually emptied the queue. You might have noticed a strange `console.log` in the `afterEach` function. This is because when you emptied the `setTimeout` queue with `clock.tick` all of the callbacks executed. In some cases it might lead to unintended consequences. `stub.reset()` allows us to empty a queue **without** needing to execute any of the callbacks.
 
 
