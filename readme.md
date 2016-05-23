@@ -93,7 +93,7 @@ npm i --save-dev raf-stub
 
 ## Stub
 
-An isolated mock that contains it's own state. Each `stub` be independent and have it's own state.
+An isolated mock that contains it's own state. Each `stub` is independent and have it's own state.
 
 ### `createStub() => Stub`
 ```js
@@ -213,9 +213,9 @@ api.step();
 // *crickets*
 ```
 
-### Enhance
+## Enhance
 
-`enhance(?roots)`
+### `enhance(?roots)`
 
 This function is used to *set* an enhanced `requestAnimationFrame` and `cancelAnimationFrame` on a root. You can manually pass in a `root`, or `roots`. If you do not pass in a root it will automatically figure out whether to use `window` or `global`.
 
@@ -375,9 +375,11 @@ describe('app', () => {
 });
 ```
 
-## Tests
-To run tests simply execute:
+## Tests for `raf-stub`
+To run the tests for this library simply execute:
+
 ```js
+npm install
 npm test
 ```
 

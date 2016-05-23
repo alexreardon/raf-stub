@@ -26,5 +26,9 @@
     "mocha"
   ],
   "author": "Alex Reardon <alexreardon@gmail.com>",
-  "license": "MIT"
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/alexreardon/raf-stub.git"
+  }
 }
