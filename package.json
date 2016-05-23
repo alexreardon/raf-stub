@@ -1,7 +1,7 @@
 {
   "name": "raf-stub",
   "version": "0.1.0",
-  "description": "A testing friendly version of requestAnimationFrame",
+  "description": "Test stubbing for requestAnimationFrame",
   "main": "index.js",
   "dependencies": {},
   "devDependencies": {
