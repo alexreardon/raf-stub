@@ -1,3 +1,11 @@
+# editors
 .idea
+
+# library
 node_modules/
+
+# MacOS
 .DS_Store
+
+# generated files
+lib/

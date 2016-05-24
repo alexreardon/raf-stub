@@ -1,4 +1,4 @@
-import factory, {enhance} from './index';
+import factory, {enhance} from '../src/index';
 import sinon from 'sinon';
 import {expect} from 'chai';
 

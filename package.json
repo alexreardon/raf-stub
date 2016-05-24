@@ -1,10 +1,12 @@
 {
   "name": "raf-stub",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Test stubbing for requestAnimationFrame",
-  "main": "index.js",
+  "main": "lib/index.js",
+  "jsnext:main": "src/index.js",
   "dependencies": {},
   "devDependencies": {
+    "babel-cli": "^6.9.0",
     "babel-core": "^6.9.0",
     "babel-eslint": "^6.0.4",
     "babel-preset-es2015": "^6.9.0",
@@ -14,9 +16,11 @@
     "sinon": "^1.17.4"
   },
   "scripts": {
-    "test": "./node_modules/.bin/eslint *.js && ./node_modules/.bin/mocha test.js --compilers js:babel-core/register",
-    "lint": "./node_modules/.bin/eslint *.js",
-    "lint-fix": "./node_modules/.bin/eslint *.js --fix"
+    "test": "npm run lint && ./node_modules/.bin/mocha test --compilers js:babel-core/register",
+    "lint": "./node_modules/.bin/eslint src test",
+    "lint-fix": "npm run lint - --fix",
+    "compile": "./node_modules/.bin/babel src --out-dir lib",
+    "prepublish": "npm run compile"
   },
   "keywords": [
     "raf",
