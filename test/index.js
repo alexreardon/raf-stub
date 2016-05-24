@@ -69,6 +69,13 @@ describe('instance', () => {
             expect(callback1.called).to.be.false;
             expect(callback2.called).to.be.true;
         });
+
+        it('should do nothing if it cannot find a matching id', () => {
+            const id = 'some fake id';
+
+            expect(() => api.remove(id)).to.not.throw();
+            expect(api.remove(id)).to.be.undefined;
+        });
     });
 
     describe('step', () => {
@@ -293,5 +300,36 @@ describe('enhance', () => {
         root.requestAnimationFrame.flush();
 
         expect(callback.called).to.be.false;
+    });
+
+    describe('no root provided', () => {
+        const original = global.requestAnimationFrame;
+
+        beforeEach(() => {
+            delete global.requestAnimationFrame;
+        });
+
+        afterEach(() => {
+            global.requestAnimationFrame = original;
+        });
+
+        it('should use the window if it exists', () => {
+            global.window = {};
+
+            enhance();
+
+            expect(global.window.requestAnimationFrame).to.be.a.function;
+
+            // cleanup
+            delete global.window;
+        });
+
+        it('should use the global if a window cannot be found', () => {
+            expect(global.requestAnimationFrame).to.not.be.a.function;
+
+            enhance();
+
+            expect(global.requestAnimationFrame).to.be.a.function;
+        });
     });
 });
