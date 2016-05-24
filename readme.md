@@ -177,9 +177,9 @@ requestAnimationFrame.step();
 ```
 
 ### `.flush()`
-Executes all current callbacks. It will also execute any additional callbacks that are added when executing the current callbacks. It will keep doing this until there are no frames left. An easy way to to think of this function is "`step()` until there are no more steps left"
+Executes all `requestAnimationFrame` callbacks, including nested calls. It will keep executing frames until there are no frames left. An easy way to to think of this function is "`step()` until there are no more steps left"
 
-**Warning** if your code just calls `requestAnimation` in an infinite loop then this will never end. Consider using `.step()` for this use case
+**Warning** if your code just calls `requestAnimationFrame` in an infinite loop then this will never end. Consider using `.step()` for this use case
 
 ```js
 // this example will use the 'enhance' syntax as it is a little clearer
@@ -200,7 +200,7 @@ api.flush();
 
 ### `.reset()`
 
-Clears all the frames without calling any callbacks, unlike `flush()` which executes all the callbacks. Reverts the stub to it's initial state. This is similar to `remove(id)` but it does not require an `id`. `reset` will also clear **all** callbacks in the frame whereas `remove(id)` only removes a single one
+Clears all the frames without executing any callbacks, unlike `flush()` which executes all the callbacks. Reverts the stub to it's initial state. This is similar to `remove(id)` but it does not require an `id`; `reset` will also clear **all** callbacks in the frame whereas `remove(id)` only removes a single one.
 
 ```js
 
