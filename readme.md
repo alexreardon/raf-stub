@@ -6,8 +6,6 @@ Accurate and predictable testing of `requestAnimationFrame` and `cancelAnimation
 
 This is **not** designed to be a polyfill and is only intended for testing code.
 
-**Warning:** this still a work a work in progress. Currently this library has been built using es6 modules but it does not have a good reuse story using es5/node. I am currently investigating a better solution.
-
 ## Basic usage
 
 ```js
@@ -91,7 +89,6 @@ describe('stub', () => {
 ```
 npm i --save-dev raf-stub
 ```
-
 
 ## Stub
 
@@ -268,6 +265,21 @@ requestAnimationFrame.reset();
 
 See **Stub** for api documentation on `step()`, `flush()` and `reset()`.
 
+## ES5 / ES6
+
+#### ES6 syntax:
+
+```js
+import stub, {enhance} from 'raf-stub';
+```
+
+#### ES5 syntax (compatible with node.js `require`);
+
+```js
+var stub = require('raf-stub').default;
+var enhance = require('raf-stub').enhance;
+```
+
 ## Recipes
 
 ### Library dependency
@@ -286,7 +298,7 @@ export default function () {
 }
 ```
 
-The trouble with this is that the library uses a local variable `raf`. This reference is declarated when the modules are importing. This means that `raf` will always points to the reference it has when the module is imported for the first time.
+The trouble with this is that the library uses a local variable `raf`. This reference is declared when the modules are importing. This means that `raf` will always points to the reference it has when the module is imported for the first time.
 
 The following **will not work**
 
@@ -335,24 +347,23 @@ before any of your tests code is executed, including module imports, then take t
 
 ```js
 // test-setup.js
-
-import createStub from 'raf-stub';
+// your test setup will be running before babel so I will write valid node code.
+var createStub = require('raf-stub').default;
 
 // option 1: setup a stub yourself
-const stub = createStub();
+var stub = createStub();
 requestAnimationFrame = stub.add;
 requestAnimationFrame = stub.remove;
 
 // add additional helpers to requestAnimationFrame:
- Object.assign(root.requestAnimationFrame, {
+ Object.assign(requestAnimationFrame, {
     step: stub.step,
     flush: stub.flush,
     reset: stub.reset
 });
 
 // option 2: use enhance! (this does option1 for you)
-import {enhance} from 'raf-stub';
-enhance();
+require('raf-stub').enhance();
 ```
 
 Then everything will work as expected!
@@ -375,6 +386,58 @@ describe('app', () => {
         // console.log => 'render allthethings!'
     });
 });
+```
+
+### Full `mocha` end-to-end setup
+For when you need to make a stub which can be used by a library (or module that ponyfills `requestAnimationFrame` at compile time)
+
+**package.json**
+```json
+{
+    "scripts": {
+        "test": "mocha render.test.js --presets es2015 --require test-setup.js"
+    }
+}
+```
+
+1. `mocha test.js` our test file
+2. `--presets es2015` this will let us use es6 + es6 modules in our test files
+3. `--require test-setup.js` this is our file where we will setup our stub
+
+**test-setup.js**
+```js
+// using node require as the babel tranform is not applied to this file
+require('raf-stub').enhance();
+```
+
+**render.js**
+```js
+const ponyfill = callback => setTimeout(callback, 1000 / 60);
+const raf = requestAnimationFrame || ponyfill;
+
+export default function() {
+    raf(() => console.log('done'));
+}
+```
+
+**render.test.js**
+```js
+import render from './render';
+
+describe('render', () => {
+    it('should log to the console', () => {
+        render();
+
+        requestAnimationFrame.step();
+
+        // console.log => 'done';
+    });
+});
+```
+
+**command line**
+```
+npm test
 ```
 
 ## Tests for `raf-stub`
