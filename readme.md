@@ -5,6 +5,12 @@
 
 Accurate and predictable testing of `requestAnimationFrame` and `cancelAnimationFrame`.
 
+**What can `raf-stub` enable you to do?**
+- Step through `requestionAnimationFrame` calls one frame at a time
+- Continue to call `requestionAnimationFrame` until there are no frames left. This lets you fast forward to the end of animations.
+- Clear out all animation frames without calling them
+- Control animations that are orchestrated by third party libraries such as [react-motion](https://github.com/chenglou/react-motion)
+
 This is **not** designed to be a polyfill and is only intended for testing code.
 
 ## Basic usage
@@ -51,13 +57,13 @@ describe('stub', () => {
 });
 ```
 
-### Stub existing `requestAnimationFrame`
-(similar to the 'basic usage' example but replaces `requestAnimationFrame` and `cancelAnimationFrame` with a stub)
+### Replace existing `requestAnimationFrame`
+
 ```js
-import {enhance} from 'raf-stub';
+import {replaceRaf} from 'raf-stub';
 
 // override requestAnimationFrame and cancelAnimationFrame with a stub
-enhance();
+replaceRaf();
 
 const render = () => {
     return requestAnimationFrame(() => {
@@ -91,7 +97,8 @@ describe('stub', () => {
 npm i --save-dev raf-stub
 ```
 
-## Stub
+## stub
+Created by `createStub()`
 
 An isolated mock that contains it's own state. Each `stub` is independent and have it's own state.
 
@@ -153,7 +160,7 @@ stub.step();
 Some times calls to `requestAnimationFrame` themselves call `requestAnimationFrame`. `step()` will let you step through them one at a time.
 
 ```js
-// this example will use the 'enhance' syntax as it is a little clearer
+// this example will use the 'replaceRaf' syntax as it is a little clearer
 const callback = () => {
     console.log('first callback')
 
@@ -180,7 +187,7 @@ Executes all `requestAnimationFrame` callbacks, including nested calls. It will 
 **Warning** if your code just calls `requestAnimationFrame` in an infinite loop then this will never end. Consider using `.step()` for this use case
 
 ```js
-// this example will use the 'enhance' syntax as it is a little clearer
+// this example will use the 'replaceRaf' syntax as it is a little clearer
 
 const callback = () => {
     console.log('first callback')
@@ -213,37 +220,37 @@ api.step();
 // *crickets*
 ```
 
-## Enhance
+## replaceRaf
 
-### `enhance(?roots)`
+### `replaceRaf(?roots)`
 
-This function is used to *set* an enhanced `requestAnimationFrame` and `cancelAnimationFrame` on a root. You can manually pass in a `root`, or `roots`. If you do not pass in a root it will automatically figure out whether to use `window` or `global`.
+This function is used to set a `requestAnimationFrame` and `cancelAnimationFrame` on a root (eg `window`). You can manually pass in a `root`, or `roots`. If you do not pass in a root it will automatically figure out whether to use `window` or `global`.
 
-**Warning** each call to `enhance` will add a new stub to the `root`. If you want to have the same stub on multiple `roots` then pass them in at the same time (eg `enhance(window, global)`).
 
+#### Basic usage
 ```js
-import {enhance} from 'raf-stub';
+import {replaceRaf} from 'raf-stub';
 
 const root = {}; // could be window, global etc.
-enhance(root);
+replaceRaf(root);
 
 // can let multiple roots share the one stub
 // useful for when you testing environment uses `global`
 // but some libraries may use `window`
 
-enhance(window, global);
+replaceRaf(window, global);
 
 // if called with no arguments it will use 'window' in the browser and 'global' in node
-enhance();
+replaceRaf();
 ```
 
-After *enhancing* a root it's `requestAnimationFrame` and `cancelAnimationFrame` functions have been set and given new capabilities.
+After calling `replaceRaf` a root it's `requestAnimationFrame` and `cancelAnimationFrame` functions have been set and given new capabilities.
 
 ```js
 // assuming running in node so 'global' is the global rather than 'window'
-import {enhance} from 'raf-stub';
+import {replaceRaf} from 'raf-stub';
 
-enhance(global);
+replaceRaf(global);
 
 const callback = () => alert('hi');
 
@@ -264,21 +271,29 @@ requestAnimationFrame.reset();
 
 ```
 
-See **Stub** for api documentation on `step()`, `flush()` and `reset()`.
+See **stub** for api documentation on `step()`, `flush()` and `reset()`.
+
+### Disclaimers!
+
+- Each call to `replaceRaf` will add a new stub to the `root`. If you want to have the same stub on multiple `roots` then pass them in at the same time (eg `replaceRaf(window, global)`).
+- If you do a one time setup of `replaceRaf()` in a test setup file you will remember to clear the stub after each test.
+```js
+    requestAnimationFrame.reset();
+```
 
 ## ES5 / ES6
 
 #### ES6 syntax:
 
 ```js
-import stub, {enhance} from 'raf-stub';
+import stub, {replaceRaf} from 'raf-stub';
 ```
 
 #### ES5 syntax (compatible with node.js `require`);
 
 ```js
 var stub = require('raf-stub').default;
-var enhance = require('raf-stub').enhance;
+var replaceRaf = require('raf-stub').replaceRaf;
 ```
 
 ## Recipes
@@ -342,7 +357,7 @@ raf === ponyfill
 If the ponyfill is being used then we cannot override the reference to `raf` as it is not exposed. Stubbing `requestAnimationFrame` will not help because the library uses a reference to the ponyfill.
 
 #### How can we get this working?
-`enhance` to the rescue!
+`replaceRaf` to the rescue!
 
 before any of your tests code is executed, including module imports, then take the opportunity to set up your stub!
 
@@ -363,8 +378,8 @@ requestAnimationFrame = stub.remove;
     reset: stub.reset
 });
 
-// option 2: use enhance! (this does option1 for you)
-require('raf-stub').enhance();
+// option 2: use replaceRaf! (this does option1 for you)
+require('raf-stub').replaceRaf();
 ```
 
 Then everything will work as expected!
@@ -408,7 +423,7 @@ For when you need to make a stub which can be used by a library (or module that 
 **test-setup.js**
 ```js
 // using node require as the babel tranform is not applied to this file
-require('raf-stub').enhance();
+require('raf-stub').replaceRaf();
 ```
 
 **render.js**

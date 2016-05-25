@@ -58,8 +58,8 @@ export default function createStub() {
     };
 }
 
-// all calls to enhance get the same stub;
-export function enhance(...roots) {
+// all calls to replaceRaf get the same stub;
+export function replaceRaf(...roots) {
     if (!roots.length) {
         roots.push(typeof window !== 'undefined' ? window : global);
     }

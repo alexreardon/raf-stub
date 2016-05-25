@@ -1,6 +1,6 @@
 {
   "name": "raf-stub",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Test stubbing for requestAnimationFrame",
   "main": "lib/index.js",
   "jsnext:main": "src/index.js",
@@ -31,7 +31,8 @@
     "requestAnimationFrame",
     "cancelAnimationFrame",
     "test",
-    "mocha"
+    "mocha",
+    "react-motion"
   ],
   "author": "Alex Reardon <alexreardon@gmail.com>",
   "license": "MIT",

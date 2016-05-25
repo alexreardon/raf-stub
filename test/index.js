@@ -1,4 +1,4 @@
-import factory, {enhance} from '../src/index';
+import factory, {replaceRaf} from '../src/index';
 import sinon from 'sinon';
 import {expect} from 'chai';
 
@@ -247,12 +247,12 @@ describe('instance', () => {
     });
 });
 
-describe('enhance', () => {
+describe('replaceRaf', () => {
     it('should replace root.requestAnimationFrame with "add"', () => {
         const root = {};
         const callback = sinon.stub();
 
-        enhance(root);
+        replaceRaf(root);
         root.requestAnimationFrame(callback);
         root.requestAnimationFrame.flush();
 
@@ -262,7 +262,7 @@ describe('enhance', () => {
         const root = {};
         const callback = sinon.stub();
 
-        enhance(root);
+        replaceRaf(root);
         const id = root.requestAnimationFrame(callback);
         root.cancelAnimationFrame(id);
         root.requestAnimationFrame.flush();
@@ -274,7 +274,7 @@ describe('enhance', () => {
         const root = {};
         const callback = sinon.stub();
 
-        enhance(root);
+        replaceRaf(root);
         root.requestAnimationFrame(callback);
         root.requestAnimationFrame.step();
 
@@ -284,7 +284,7 @@ describe('enhance', () => {
         const root = {};
         const callback = sinon.stub();
 
-        enhance(root);
+        replaceRaf(root);
         root.requestAnimationFrame(callback);
         root.requestAnimationFrame.flush();
 
@@ -294,7 +294,7 @@ describe('enhance', () => {
         const root = {};
         const callback = sinon.stub();
 
-        enhance(root);
+        replaceRaf(root);
         root.requestAnimationFrame(callback);
         root.requestAnimationFrame.reset();
         root.requestAnimationFrame.flush();
@@ -316,7 +316,7 @@ describe('enhance', () => {
         it('should use the window if it exists', () => {
             global.window = {};
 
-            enhance();
+            replaceRaf();
 
             expect(global.window.requestAnimationFrame).to.be.a.function;
 
@@ -327,7 +327,7 @@ describe('enhance', () => {
         it('should use the global if a window cannot be found', () => {
             expect(global.requestAnimationFrame).to.not.be.a.function;
 
-            enhance();
+            replaceRaf();
 
             expect(global.requestAnimationFrame).to.be.a.function;
         });
