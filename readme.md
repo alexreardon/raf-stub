@@ -154,7 +154,6 @@ Some times calls to `requestAnimationFrame` themselves call `requestAnimationFra
 
 ```js
 // this example will use the 'enhance' syntax as it is a little clearer
-
 const callback = () => {
     console.log('first callback')
 
@@ -163,8 +162,9 @@ const callback = () => {
 };
 
 requestAnimationFrame(callback);
+
 // release the first frame
-api.step();
+requestAnimationFrame.step();
 
 // console.log => 'first callback'
 
