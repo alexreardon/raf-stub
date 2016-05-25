@@ -21,14 +21,14 @@ const render = () => {
 }
 
 describe('stub', () => {
-    const stub = createStub();
+    let stub;
 
     beforeEach(() => {
+        stub = createStub();
         sinon.stub(global, 'requestAnimationFrame', stub.add);
     });
 
     afterEach(() => {
-        stub.reset();
         global.requestAnimationFrame.restore();
     });
 
