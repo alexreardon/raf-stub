@@ -1,0 +1,11 @@
+# You can use a Docker image from Docker Hub or your own container
+# registry for your build environment.
+image: node:5.11.0
+
+pipelines:
+  default:
+    - step:
+        script:
+          - npm --version
+          - npm install
+          - npm test
