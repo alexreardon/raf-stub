@@ -1,6 +1,11 @@
-export default function createStub() {
+const now = require('performance-now');
+const defaultDuration = 1000 / 60;
+
+export default function createStub(frameDuration = defaultDuration) {
     const frames = [];
     let frameId = 0;
+    const startTime = now();
+    let currentTime = startTime;
 
     function add(cb) {
         const id = ++frameId;
@@ -30,24 +35,27 @@ export default function createStub() {
         frames.splice(index, 1);
     }
 
-    function flush() {
+    function flush(duration = frameDuration) {
         while (frames.length) {
-            step();
+            step(1, duration);
         }
     }
 
     function reset() {
         frames.length = 0;
+        currentTime = startTime;
     }
 
-    function step(steps = 1) {
+    function step(steps = 1, duration = frameDuration) {
         if (steps === 0) {
             return;
         }
 
+        currentTime = currentTime + duration;
+
         const shallow = frames.slice(0);
         shallow.forEach(frame => {
-            frame.callback();
+            frame.callback(currentTime);
         });
 
         return step(steps - 1);
@@ -64,6 +72,7 @@ export function replaceRaf(...roots) {
         roots.push(typeof window !== 'undefined' ? window : global);
     }
 
+    // TODO
     const stub = createStub();
 
     roots.forEach(root => {

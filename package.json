@@ -4,7 +4,9 @@
   "description": "Test stubbing for requestAnimationFrame",
   "main": "lib/index.js",
   "jsnext:main": "src/index.js",
-  "dependencies": {},
+  "dependencies": {
+    "performance-now": "^0.2.0"
+  },
   "devDependencies": {
     "babel-cli": "^6.9.0",
     "babel-core": "^6.9.0",
