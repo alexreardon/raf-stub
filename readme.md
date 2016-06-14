@@ -102,11 +102,18 @@ Created by `createStub()`
 
 An isolated mock that contains it's own state. Each `stub` is independent and have it's own state.
 
-### `createStub() => Stub`
-```js
-import createStub from 'raf-stub';
+### `createStub(?frameDuration = 1000 / 60, ?startTime = performance.now()) => Stub`
 
+**Basic usage**
+```js
 const stub = createStub();
+```
+
+**Advanced usage**
+```js
+const frameDuration = 1000 / 60 * 2; // an extra slow frame
+const startTime = performance.now() + 1000;
+const stub = createStub(frameDuration, startTime);
 ```
 
 ### `.add(callback) => Int`
@@ -136,11 +143,14 @@ stub.add(callback);
 stub.remove(callback);
 ```
 
-### `.step(?steps=1)`
+### `.step(?steps=1, ?duration = frameDuration)`
+Executes all callbacks in the current frame and optionally additional frames.
 
-Executes all callbacks in the current frame. You can optionally provide the amount of frames you would like to release. This becomes useful when you have nested calls
+- *steps (Int)* => the amount of animation frames you would like to release. This is useful when you have nested calls.
+- *duration (Number)* => the default `duration` value is provided by the `frameDuration` argument to `createStub(frameDuration)`. However, you can override it for a specific `.step()` call using the `duration` argument.
 
 **Simple example**
+
 ```js
 const callback1 = () => console.log('first callback');
 const callback2 = () => console.log('second callback');
@@ -152,7 +162,6 @@ stub.step();
 
 // console.log => 'first callback'
 // console.log => 'second callback'
-
 ```
 
 **Nested example**
@@ -181,11 +190,30 @@ requestAnimationFrame.step();
 // console.log => 'second callback'
 ```
 
-### `.flush()`
+**Time manipulated example**
+
+```js
+const startTime = performance.now();
+const frameDuration = 10;
+const longFrameDuration = frameDuration * 2;
+const stub = createStub(frameDuration, startTime);
+const callback = currentTime => console.log(`call time: ${startTime - currentTime}`);
+
+stub.add(callback);
+stub.step(1, longFrameDuration);
+
+// console.log => call time: 20
+```
+
+
+### `.flush(?duration = frameDuration)`
 Executes all `requestAnimationFrame` callbacks, including nested calls. It will keep executing frames until there are no frames left. An easy way to to think of this function is "`step()` until there are no more steps left"
+
+- *duration (Number)* => the default `duration` value is provided by the `frameDuration` argument to `createStub(frameDuration)`. However, you can override it for a specific `.flush()` call using the `duration` argument. The `duration` will be applied to all frames in the flush.
 
 **Warning** if your code just calls `requestAnimationFrame` in an infinite loop then this will never end. Consider using `.step()` for this use case
 
+**Simple example**
 ```js
 // this example will use the 'replaceRaf' syntax as it is a little clearer
 
@@ -202,6 +230,9 @@ api.flush();
 // console.log => 'first callback'
 // console.log => 'second callback'
 ```
+
+**Time manipulated example**
+[TODO]
 
 ### `.reset()`
 
@@ -278,7 +309,7 @@ See **stub** for api documentation on `step()`, `flush()` and `reset()`.
 - Each call to `replaceRaf` will add a new stub to the `root`. If you want to have the same stub on multiple `roots` then pass them in at the same time (eg `replaceRaf(window, global)`).
 - If you do a one time setup of `replaceRaf()` in a test setup file you will remember to clear the stub after each test.
 ```js
-    requestAnimationFrame.reset();
+requestAnimationFrame.reset();
 ```
 
 ## ES5 / ES6
@@ -297,6 +328,66 @@ var replaceRaf = require('raf-stub').replaceRaf;
 ```
 
 ## Recipes
+
+## Controlling the `frameDuration` and `startTime`
+
+The first argument to a `requestAnimationFrame` callback is a [DOMHighResTimeStamp](https://developer.mozilla.org/en-US/docs/Web/API/DOMHighResTimeStamp)
+
+```js
+requestAnimationFrame(currentTime => {
+    console.log('the current time is', currentTime);
+});
+```
+
+Under normal circumstances you would not want to modify the default values. Being able to manipulate the `startTime` and `endTime` will let you test code that does some logic based on the `currentTime` argument.
+
+**Note** changing the time values does not actually impact how long your test takes to execute, nor does it attach itself to the system clock. It is simply a way for you to have control over the first argument (`currentTime`) to `requestAnimationFrame` callbacks.
+
+```js
+const idealFrameDuration = 1000 / 2;
+const slowFrameDuration = idealFrameDuration * 2;
+const startTime = performance.now();
+const stub = createStub(slowFrameDuration, startTime);
+
+stub.add(currentTime => {
+    if(startTime + currentTime > idealFrameDuration) {
+        console.log('a slow frame occured');
+    } else {
+    console.log('a standard frame occured');
+    }
+});
+
+stub.step();
+
+// console.log => 'a slow frame occured'
+```
+
+**How to control the `frameDuration` and `startTime`:**
+
+```js
+const callback = currentTime => console.log(`time taken: ${currentTime - startTime}`);
+
+// this will set the frameDuration and startTime for all stub calls. They can be overwritted with specific function calls
+const stub = createStub(100, performance.now());
+
+stub.add(callback);
+// this will use the values specific when creating the stub
+stub.step();
+// console.log => 'time taken: 100'
+
+stub.add(callback);
+// this will overwrite the frameDuration to '200' for this call
+stub.step(1, 200);
+// console.log => 'time taken: 200'
+
+stub.add(callback);
+stub.flush();
+// console.log => 'time taken: 100'
+
+stub.add(callback);
+stub.flush(200);
+// console.log => 'time taken: 200'
+```
 
 ### Library dependency
 
