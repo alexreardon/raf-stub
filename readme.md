@@ -253,7 +253,7 @@ api.step();
 
 ## replaceRaf
 
-### `replaceRaf(?roots)`
+### `replaceRaf([roots], {frameDuration = 1000/ 60, startTime = performance.now()})`
 
 This function is used to set a `requestAnimationFrame` and `cancelAnimationFrame` on a root (eg `window`). You can manually pass in a `root`, or `roots`. If you do not pass in a root it will automatically figure out whether to use `window` or `global`.
 
@@ -263,16 +263,19 @@ This function is used to set a `requestAnimationFrame` and `cancelAnimationFrame
 import {replaceRaf} from 'raf-stub';
 
 const root = {}; // could be window, global etc.
-replaceRaf(root);
+replaceRaf([root]);
 
 // can let multiple roots share the one stub
 // useful for when you testing environment uses `global`
 // but some libraries may use `window`
 
-replaceRaf(window, global);
+replaceRaf([window, global]);
 
 // if called with no arguments it will use 'window' in the browser and 'global' in node
 replaceRaf();
+
+// you can override the frameDuration and startTime for the stub
+replaceRaf([window], {frameDuration: 200, startTime: new Date().getTime() + 1000 })
 ```
 
 After calling `replaceRaf` a root it's `requestAnimationFrame` and `cancelAnimationFrame` functions have been set and given new capabilities.

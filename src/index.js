@@ -67,6 +67,13 @@ export default function createStub(frameDuration = defaultDuration, startTime = 
 
 // all calls to replaceRaf get the same stub;
 export function replaceRaf(roots = [], {duration = defaultDuration, startTime = now()} = {}) {
+    // 0.3.x api support
+    if (arguments.length && !Array.isArray(roots)) {
+        console.info('hi');
+        console.warn('replaceRaf(roots) has been depreciated. Please now use replaceRaf([roots], options). See here for more details: https://github.com/alexreardon/raf-stub/releases');
+        roots = Array.from(arguments);
+    }
+
     if (!roots.length) {
         roots.push(typeof window !== 'undefined' ? window : global);
     }
