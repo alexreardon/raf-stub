@@ -1,17 +1,16 @@
 const now = require('performance-now');
 const defaultDuration = 1000 / 60;
 
-export default function createStub(frameDuration = defaultDuration) {
+export default function createStub(frameDuration = defaultDuration, startTime = now()) {
     const frames = [];
     let frameId = 0;
-    const startTime = now();
     let currentTime = startTime;
 
     function add(cb) {
         const id = ++frameId;
 
-        const callback = function () {
-            cb();
+        const callback = function (time) {
+            cb(time);
             // remove callback from frames after calling it
             remove(id);
         };
@@ -67,13 +66,12 @@ export default function createStub(frameDuration = defaultDuration) {
 }
 
 // all calls to replaceRaf get the same stub;
-export function replaceRaf(...roots) {
+export function replaceRaf(roots = [], {duration = defaultDuration, startTime = now()} = {}) {
     if (!roots.length) {
         roots.push(typeof window !== 'undefined' ? window : global);
     }
 
-    // TODO
-    const stub = createStub();
+    const stub = createStub(duration, startTime);
 
     roots.forEach(root => {
         root.requestAnimationFrame = stub.add;
