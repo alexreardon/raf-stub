@@ -220,6 +220,15 @@ describe('instance', () => {
         });
 
         describe('duration', () => {
+            it('should use the default time when no duration is provided', () => {
+                const callback = sinon.stub();
+
+                api.add(callback);
+                api.step();
+
+                expect(callback.calledWith(startTime + frameDuration)).to.be.true;
+            });
+
             it('should pass the current time + duration to callbacks', () => {
                 const callback = sinon.stub();
                 const duration = 10;
@@ -230,13 +239,18 @@ describe('instance', () => {
                 expect(callback.calledWith(startTime + duration)).to.be.true;
             });
 
-            it('should use the default time when no duration is provided', () => {
-                const callback = sinon.stub();
+            it('should also pass the duration to mutli-step calls', () => {
+                const duration = 10;
+                const child = sinon.stub();
+                const parent = sinon.spy(function () {
+                    api.add(child);
+                });
 
-                api.add(callback);
-                api.step();
+                api.add(parent);
+                api.step(2, duration);
 
-                expect(callback.calledWith(startTime + frameDuration)).to.be.true;
+                expect(parent.calledWith(startTime + duration)).to.be.true;
+                expect(child.calledWith(startTime + duration * 2)).to.be.true;
             });
 
             it('should increase the time taken by the duration in each step', () => {

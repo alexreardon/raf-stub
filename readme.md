@@ -10,6 +10,7 @@ Accurate and predictable testing of `requestAnimationFrame` and `cancelAnimation
 - Continue to call `requestionAnimationFrame` until there are no frames left. This lets you fast forward to the end of animations.
 - Clear out all animation frames without calling them
 - Control animations that are orchestrated by third party libraries such as [react-motion](https://github.com/chenglou/react-motion)
+- Control time values passed to your `requestAnimationFrame` callbacks
 
 This is **not** designed to be a polyfill and is only intended for testing code.
 
@@ -99,17 +100,20 @@ npm i --save-dev raf-stub
 
 ## stub
 Created by `createStub()`
-
 An isolated mock that contains it's own state. Each `stub` is independent and have it's own state.
+
+**Note** changing the time values (`startTime`, `frameDuration` and `duration`) does not actually impact how long your test takes to execute, nor does it attach itself to the system clock. It is simply a way for you to have control over the first argument (`currentTime`) to `requestAnimationFrame` callbacks.
 
 ### `createStub(?frameDuration = 1000 / 60, ?startTime = performance.now()) => Stub`
 
 **Basic usage**
+
 ```js
 const stub = createStub();
 ```
 
 **Advanced usage**
+
 ```js
 const frameDuration = 1000 / 60 * 2; // an extra slow frame
 const startTime = performance.now() + 1000;
@@ -146,8 +150,8 @@ stub.remove(callback);
 ### `.step(?steps=1, ?duration = frameDuration)`
 Executes all callbacks in the current frame and optionally additional frames.
 
-- *steps (Int)* => the amount of animation frames you would like to release. This is useful when you have nested calls.
-- *duration (Number)* => the default `duration` value is provided by the `frameDuration` argument to `createStub(frameDuration)`. However, you can override it for a specific `.step()` call using the `duration` argument.
+- `steps (Int)` => the amount of animation frames you would like to release. This is useful when you have nested calls.
+- `duration (Number)` => the amount of time the frame takes to execute. The default `duration` value is provided by the `frameDuration` argument to `createStub(frameDuration)`. However, you can override it for a specific `.step()` call using the `duration` argument.
 
 **Simple example**
 
@@ -209,11 +213,12 @@ stub.step(1, longFrameDuration);
 ### `.flush(?duration = frameDuration)`
 Executes all `requestAnimationFrame` callbacks, including nested calls. It will keep executing frames until there are no frames left. An easy way to to think of this function is "`step()` until there are no more steps left"
 
-- *duration (Number)* => the default `duration` value is provided by the `frameDuration` argument to `createStub(frameDuration)`. However, you can override it for a specific `.flush()` call using the `duration` argument. The `duration` will be applied to all frames in the flush.
+- `duration (Number)` => the duration for each frame in the flush - each frame gets the same value. If you want different frames to get different values then use `.step()`. The default `duration` value is provided by the `frameDuration` argument to `createStub(frameDuration)`. However, you can override it for a specific `.flush()` call using the `duration` argument.
 
 **Warning** if your code just calls `requestAnimationFrame` in an infinite loop then this will never end. Consider using `.step()` for this use case
 
 **Simple example**
+
 ```js
 // this example will use the 'replaceRaf' syntax as it is a little clearer
 
@@ -232,7 +237,17 @@ api.flush();
 ```
 
 **Time manipulated example**
-[TODO]
+
+```js
+const startTime = performance.now();
+const stub = createStub(100, startTime);
+const callback = currentTime => console.log(`call time: ${currentTime - startTime}`);
+
+stub.add(callback);
+stub.flush(200);
+
+// console.log => 'call time: 200'
+```
 
 ### `.reset()`
 
@@ -253,9 +268,13 @@ api.step();
 
 ## replaceRaf
 
-### `replaceRaf([roots], {frameDuration = 1000/ 60, startTime = performance.now()})`
+### `replaceRaf(?[roots], ?{frameDuration = 1000/ 60, startTime = performance.now()})`
 
-This function is used to set a `requestAnimationFrame` and `cancelAnimationFrame` on a root (eg `window`). You can manually pass in a `root`, or `roots`. If you do not pass in a root it will automatically figure out whether to use `window` or `global`.
+This function is used to set a `requestAnimationFrame` and `cancelAnimationFrame` on a root (eg `window`).
+
+- `roots (?Array)` => an optional array of roots to be stubbed (eg [`window`, `global`]). If no root is provided then the function will automatically figure out whether to use `window` or `global`
+- `startTime (Int)` =>
+- `frameDuration (Number)` =?
 
 
 #### Basic usage
@@ -332,7 +351,7 @@ var replaceRaf = require('raf-stub').replaceRaf;
 
 ## Recipes
 
-## Controlling the `frameDuration` and `startTime`
+## `frameDuration` and `startTime`
 
 The first argument to a `requestAnimationFrame` callback is a [DOMHighResTimeStamp](https://developer.mozilla.org/en-US/docs/Web/API/DOMHighResTimeStamp)
 
@@ -365,7 +384,7 @@ stub.step();
 // console.log => 'a slow frame occured'
 ```
 
-**How to control the `frameDuration` and `startTime`:**
+**Controlling the `frameDuration` and `startTime`:**
 
 ```js
 const callback = currentTime => console.log(`time taken: ${currentTime - startTime}`);
@@ -379,7 +398,7 @@ stub.step();
 // console.log => 'time taken: 100'
 
 stub.add(callback);
-// this will overwrite the frameDuration to '200' for this call
+// this will overwrite the duration of the frame to '200' for this call
 stub.step(1, 200);
 // console.log => 'time taken: 200'
 
@@ -744,5 +763,100 @@ describe('app', () => {
 ```
 
 We got around this issue by flushing the clock. We did this by calling `clock.tick(some big number)`. This suffers from the problem that existed a previous example: you cannot be sure that you have actually emptied the queue. You might have noticed a strange `console.log` in the `afterEach` function. This is because when you emptied the `setTimeout` queue with `clock.tick` all of the callbacks executed. In some cases it might lead to unintended consequences. `stub.reset()` allows us to empty a queue **without** needing to execute any of the callbacks.
+
+### Case 4: controlling the first argument to `requestAnimationFrame` callbacks
+
+Lets say you have setup that looks like this:
+
+```js
+const idealFrameDuration = 1000 / 60;
+
+const startAnimation = startTime => {
+    let previousTime = startTime;
+
+    const loop = currentTime => {
+        if(!currentTime) {
+            throw new Error('could not get the current time');
+        }
+
+        if(currentTime - previousTime > idealFrameDuration) {
+            console.log('a slow frame occurred');
+        } else {
+            console.log('a normal frame occurred');
+        }
+
+        previousTime = currentTime;
+        requestAnimationFrame(loop);
+    }
+
+    requestAnimationFrame(loop);
+
+
+};
+
+startAnimation(new Date().getTime());
+```
+
+How could we test the behaviour of the `loop` function? Let's try with `setTimeout`
+
+```js
+describe('startAnimation', () => {
+    let clock;
+
+    beforeEach(() => {
+        clock = sinon.useFakeTimers();
+        sinon.stub(window, 'requestAnimationFrame', setTimeout);
+        sinon.stub(window, 'cancelAnimationFrame', clearTimeout);
+    });
+
+    afterEach(() => {
+        clock.restore();
+        window.requestAnimationFrame.restore();
+        window.cancelAnimationFrame.restore();
+    });
+
+    it('should pass the updated time to loop', () => {
+        const startTime = performance.now();
+        startAnimation(startTime);
+
+        clock.tick();
+
+        // Error => 'could not get the current time'
+    });
+});
+```
+
+What happened here? By default `setTimeout` does not pass any argument as the first parameter to callbacks. Getting this to work is hard because we would need to both use `setTimeout` as a replacement for `requestAnimationFrame` as well as changing it's behaviour to pass a controlled value as the first argument.
+
+How can `raf-stub` help us?
+
+```js
+import {replaceRaf} from 'raf-stub';
+const startTime = performance.now();
+const idealFrameDuration = 1000 / 60;
+
+replaceRaf([], {startTime});
+
+describe('startAnimation', () => {
+
+    afterEach(() => {
+        requestAnimationFrame.reset();
+    });
+
+    it('should pass the updated time to loop', () => {
+
+        const slowFrameDuration = idealFrameDuration * 2;
+        startAnimation(startTime);
+
+        requestAnimationFrame.step(1, idealFrameDuration);
+        // console.log => 'a normal frame occurred'
+
+
+        requestAnimationFrame.step(1, slowFrameDuration);
+        // console.log => 'a slow frame occurred'
+    });
+});
+```
+
 
 
