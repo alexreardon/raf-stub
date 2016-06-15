@@ -1,12 +1,16 @@
-export default function createStub() {
+const now = require('performance-now');
+const defaultDuration = 1000 / 60;
+
+export default function createStub(frameDuration = defaultDuration, startTime = now()) {
     const frames = [];
     let frameId = 0;
+    let currentTime = startTime;
 
     function add(cb) {
         const id = ++frameId;
 
-        const callback = function () {
-            cb();
+        const callback = function (time) {
+            cb(time);
             // remove callback from frames after calling it
             remove(id);
         };
@@ -30,27 +34,30 @@ export default function createStub() {
         frames.splice(index, 1);
     }
 
-    function flush() {
+    function flush(duration = frameDuration) {
         while (frames.length) {
-            step();
+            step(1, duration);
         }
     }
 
     function reset() {
         frames.length = 0;
+        currentTime = startTime;
     }
 
-    function step(steps = 1) {
+    function step(steps = 1, duration = frameDuration) {
         if (steps === 0) {
             return;
         }
 
+        currentTime = currentTime + duration;
+
         const shallow = frames.slice(0);
         shallow.forEach(frame => {
-            frame.callback();
+            frame.callback(currentTime);
         });
 
-        return step(steps - 1);
+        return step(steps - 1, duration);
     }
 
     return {
@@ -59,12 +66,18 @@ export default function createStub() {
 }
 
 // all calls to replaceRaf get the same stub;
-export function replaceRaf(...roots) {
+export function replaceRaf(roots = [], {duration = defaultDuration, startTime = now()} = {}) {
+    // 0.3.x api support
+    if (arguments.length && !Array.isArray(roots)) {
+        console.warn('replaceRaf(roots) has been depreciated. Please now use replaceRaf([roots], options). See here for more details: https://github.com/alexreardon/raf-stub/releases');
+        roots = Array.from(arguments);
+    }
+
     if (!roots.length) {
         roots.push(typeof window !== 'undefined' ? window : global);
     }
 
-    const stub = createStub();
+    const stub = createStub(duration, startTime);
 
     roots.forEach(root => {
         root.requestAnimationFrame = stub.add;
