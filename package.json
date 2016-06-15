@@ -1,6 +1,6 @@
 {
   "name": "raf-stub",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Test stubbing for requestAnimationFrame",
   "main": "lib/index.js",
   "jsnext:main": "src/index.js",
