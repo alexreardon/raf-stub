@@ -273,8 +273,11 @@ api.step();
 This function is used to set a `requestAnimationFrame` and `cancelAnimationFrame` on a root (eg `window`).
 
 - `roots (?Array)` => an optional array of roots to be stubbed (eg [`window`, `global`]). If no root is provided then the function will automatically figure out whether to use `window` or `global`
-- `startTime (Int)` =>
-- `frameDuration (Number)` =?
+- `options (?Object)` => optional additional values
+
+`options`
+- `startTime (Int)` => see `createStub()`
+- `frameDuration (Number)` => see `createStub()`
 
 
 #### Basic usage
