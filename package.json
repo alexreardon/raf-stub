@@ -1,7 +1,7 @@
 {
   "name": "raf-stub",
-  "version": "0.4.0",
-  "description": "Test stubbing for requestAnimationFrame",
+  "version": "1.0.0",
+  "description": "Accurate and predictable testing of requestAnimationFrame and cancelAnimationFrame",
   "main": "lib/index.js",
   "jsnext:main": "src/index.js",
   "dependencies": {
@@ -33,6 +33,7 @@
     "requestAnimationFrame",
     "cancelAnimationFrame",
     "test",
+    "testing",
     "mocha",
     "react-motion"
   ],

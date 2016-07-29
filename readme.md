@@ -2,6 +2,7 @@
 
 [![Build Status](https://travis-ci.org/alexreardon/raf-stub.svg?branch=master)](https://travis-ci.org/alexreardon/raf-stub)
 [![Code coverage](https://codecov.io/github/alexreardon/raf-stub/coverage.svg)](https://codecov.io/gh/alexreardon/raf-stub)
+[![SemVer](https://img.shields.io/badge/SemVer-2.0.0-brightgreen.svg)](http://semver.org/spec/v2.0.0.html)
 
 Accurate and predictable testing of `requestAnimationFrame` and `cancelAnimationFrame`.
 
@@ -351,6 +352,30 @@ import stub, {replaceRaf} from 'raf-stub';
 var stub = require('raf-stub').default;
 var replaceRaf = require('raf-stub').replaceRaf;
 ```
+
+## Semantic Versioning
+This project used [Semantic versioning 2.0.0](http://semver.org/) to ensure a consistent versioning strategy. 
+
+`X.Y.Z` (major, minor, patch)
+
+- `X`: breaking changes
+- `Y`: new features (non breaking)
+- `Z`: patches
+
+A safe `raf-stub` `package.json` dependency would therefore be anything that allows changes to the *minor* or *patch* version
+
+#### Examples
+These examples will allow changes to *minor* and *patch* versions but not *major*
+
+##### [Carrot ranges](https://docs.npmjs.com/misc/semver#caret-ranges-123-025-004) (npm default)
+
+`^$major.$minor.$patch` (eg `^1.0.0`)
+
+
+##### [X ranges](https://docs.npmjs.com/misc/semver#x-ranges-12x-1x-12-) 
+
+`$major.x` (eg `1.x`)
+
 
 ## Recipes
 
