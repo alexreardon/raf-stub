@@ -1,6 +1,8 @@
-import createStub, {replaceRaf} from '../src/index';
+// @flow
+import createStub, { replaceRaf } from '../src';
 import sinon from 'sinon';
-import {expect} from 'chai';
+import { expect } from 'chai';
+import { it, beforeEach, afterEach, describe } from 'mocha';
 import now from 'performance-now';
 
 const defaultDuration = 1000 / 60;
@@ -100,7 +102,7 @@ describe('instance', () => {
         });
 
         it('should do nothing if it cannot find a matching id', () => {
-            const id = 'some fake id';
+            const id = 6;
 
             expect(() => api.remove(id)).to.not.throw();
             expect(api.remove(id)).to.be.undefined;
@@ -139,7 +141,7 @@ describe('instance', () => {
         });
 
         it('should not execute callbacks in the next frame', () => {
-            const parent = sinon.spy(function () {
+            const parent = sinon.spy(() => {
                 api.add(child);
             });
             const child = sinon.stub();
@@ -153,7 +155,7 @@ describe('instance', () => {
 
         it('should execute nested calls in the next frame', () => {
             const child = sinon.stub();
-            const parent = sinon.spy(function () {
+            const parent = sinon.spy(() => {
                 api.add(child);
             });
 
@@ -178,7 +180,7 @@ describe('instance', () => {
             it('should respect implicit bindings', () => {
                 const bar = {
                     a: 5,
-                    foo
+                    foo,
                 };
                 const callback = sinon.spy(function () {
                     return bar.foo();
@@ -192,7 +194,7 @@ describe('instance', () => {
 
             it('should respect explicit bindings', () => {
                 const bar = {
-                    a: 5
+                    a: 5,
                 };
                 const callback = sinon.spy(function () {
                     return foo.call(bar);
@@ -206,7 +208,7 @@ describe('instance', () => {
 
             it('should respect hard bindings', () => {
                 const bar = {
-                    a: 5
+                    a: 5,
                 };
                 const callback = sinon.spy(function () {
                     return foo.bind(bar)();
@@ -242,7 +244,7 @@ describe('instance', () => {
             it('should also pass the duration to mutli-step calls', () => {
                 const duration = 10;
                 const child = sinon.stub();
-                const parent = sinon.spy(function () {
+                const parent = sinon.spy(() => {
                     api.add(child);
                 });
 
@@ -255,7 +257,7 @@ describe('instance', () => {
 
             it('should increase the time taken by the duration in each step', () => {
                 const child = sinon.stub();
-                const parent = sinon.spy(function () {
+                const parent = sinon.spy(() => {
                     api.add(child);
                 });
                 const parentDuration = 10;
@@ -285,7 +287,7 @@ describe('instance', () => {
         });
 
         it('should execute all nested callbacks', () => {
-            const parent = sinon.spy(function () {
+            const parent = sinon.spy(() => {
                 api.add(child);
             });
             const child = sinon.stub();
@@ -298,7 +300,7 @@ describe('instance', () => {
         });
 
         it('should execute all nested callbacks with the stubs frame duration', () => {
-            const parent = sinon.spy(function () {
+            const parent = sinon.spy(() => {
                 api.add(child);
             });
             const child = sinon.stub();
@@ -311,7 +313,7 @@ describe('instance', () => {
         });
 
         it('should allow you to flush callbacks with a provided frame duration', () => {
-            const parent = sinon.spy(function () {
+            const parent = sinon.spy(() => {
                 api.add(child);
             });
             const child = sinon.stub();
@@ -340,7 +342,7 @@ describe('instance', () => {
         });
 
         it('should remove all callbacks in the current future frames without calling them', () => {
-            const parent = sinon.spy(function () {
+            const parent = sinon.spy(() => {
                 api.add(child);
             });
             const child = sinon.stub();
@@ -486,7 +488,7 @@ describe('replaceRaf', () => {
             const root = {};
             const callback = sinon.stub();
 
-            replaceRaf([root], {startTime});
+            replaceRaf([root], { startTime });
 
             root.requestAnimationFrame(callback);
             root.requestAnimationFrame.flush();
@@ -501,7 +503,7 @@ describe('replaceRaf', () => {
 
             replaceRaf([root], {
                 startTime,
-                duration: customDuration
+                duration: customDuration,
             });
 
             root.requestAnimationFrame(callback);
@@ -516,7 +518,7 @@ describe('replaceRaf', () => {
             const customStartTime = startTime + 1000;
 
             replaceRaf([root], {
-                startTime: customStartTime
+                startTime: customStartTime,
             });
 
             root.requestAnimationFrame(callback);
@@ -536,7 +538,7 @@ describe('replaceRaf', () => {
         });
 
         it('should support a single root as an argument', () => {
-           const root = {};
+            const root = {};
 
             replaceRaf(root);
 
@@ -559,5 +561,4 @@ describe('replaceRaf', () => {
             expect(console.warn.called).to.be.true;
         });
     });
-
 });

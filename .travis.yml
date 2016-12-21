@@ -1,5 +1,4 @@
 language: node_js
+cache: yarn
 node_js:
-  - "5.1"
-after_success:
-- npm run codecov
+  - "6.7"

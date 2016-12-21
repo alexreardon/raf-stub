@@ -1,15 +1,24 @@
+// @flow
 const now = require('performance-now');
-const defaultDuration = 1000 / 60;
+const defaultDuration: number = 1000 / 60;
 
-export default function createStub(frameDuration = defaultDuration, startTime = now()) {
+type Api = {
+    add: (cb: Function) => number,
+    remove: (id: number) => void,
+    flush: (duration: ?number) => void,
+    reset: () => void,
+    step: (steps?: number, duration?: ?number) => void
+};
+
+export default function createStub (frameDuration: number = defaultDuration, startTime: number = now()): Api {
     const frames = [];
     let frameId = 0;
     let currentTime = startTime;
 
-    function add(cb) {
+    const add = (cb: Function): number => {
         const id = ++frameId;
 
-        const callback = function (time) {
+        const callback = (time) => {
             cb(time);
             // remove callback from frames after calling it
             remove(id);
@@ -17,13 +26,13 @@ export default function createStub(frameDuration = defaultDuration, startTime = 
 
         frames.push({
             id,
-            callback
+            callback,
         });
 
         return id;
-    }
+    };
 
-    function remove(id) {
+    const remove = (id: number): void => {
         const index = frames.findIndex(frame => frame.id === id);
 
         if (index === -1) {
@@ -32,20 +41,20 @@ export default function createStub(frameDuration = defaultDuration, startTime = 
 
         // remove frame from array
         frames.splice(index, 1);
-    }
+    };
 
-    function flush(duration = frameDuration) {
+    const flush = (duration? = frameDuration): void => {
         while (frames.length) {
             step(1, duration);
         }
-    }
+    };
 
-    function reset() {
+    const reset = (): void => {
         frames.length = 0;
         currentTime = startTime;
-    }
+    };
 
-    function step(steps = 1, duration = frameDuration) {
+    const step = (steps?: number = 1, duration?: ?number = frameDuration): void => {
         if (steps === 0) {
             return;
         }
@@ -58,21 +67,40 @@ export default function createStub(frameDuration = defaultDuration, startTime = 
         });
 
         return step(steps - 1, duration);
-    }
-
-    return {
-        add, remove, reset, flush, step
     };
+
+    const api: Api = {
+        add,
+        remove,
+        reset,
+        flush,
+        step,
+    };
+
+    return api;
 }
 
 // all calls to replaceRaf get the same stub;
-export function replaceRaf(roots = [], {duration = defaultDuration, startTime = now()} = {}) {
+type ReplaceRafOptions = {
+    duration?: number,
+    startTime?: number
+};
+
+// 0.3.x api
+/* eslint-disable no-redeclare*/
+declare function replaceRaf(...rest: Array<Object>): void;
+
+// new api
+declare function replaceRaf(roots?: Object[], options?: ?ReplaceRafOptions): void;
+
+export function replaceRaf(roots?: Object[] = [], { duration = defaultDuration, startTime = now() }: ReplaceRafOptions = {}) {
     // 0.3.x api support
     if (arguments.length && !Array.isArray(roots)) {
         console.warn('replaceRaf(roots) has been depreciated. Please now use replaceRaf([roots], options). See here for more details: https://github.com/alexreardon/raf-stub/releases');
         roots = Array.from(arguments);
     }
 
+    // automatic usage of 'window' or 'global'
     if (!roots.length) {
         roots.push(typeof window !== 'undefined' ? window : global);
     }
@@ -84,9 +112,10 @@ export function replaceRaf(roots = [], {duration = defaultDuration, startTime = 
         Object.assign(root.requestAnimationFrame, {
             step: stub.step,
             flush: stub.flush,
-            reset: stub.reset
+            reset: stub.reset,
         });
 
         root.cancelAnimationFrame = stub.remove;
     });
 }
+/* eslint-enable no-redeclare*/
