@@ -1,5 +1,9 @@
 {
   "presets": [
     "es2015"
-  ]
+  ],
+  "plugins": [
+        // remove flow types
+        "transform-flow-strip-types"
+    ]
 }

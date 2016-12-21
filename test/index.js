@@ -1,4 +1,4 @@
-import createStub, {replaceRaf} from '../src/index';
+import createStub, {replaceRaf} from '../src';
 import sinon from 'sinon';
 import {expect} from 'chai';
 import now from 'performance-now';
@@ -139,7 +139,7 @@ describe('instance', () => {
         });
 
         it('should not execute callbacks in the next frame', () => {
-            const parent = sinon.spy(function () {
+            const parent = sinon.spy(() => {
                 api.add(child);
             });
             const child = sinon.stub();
@@ -153,7 +153,7 @@ describe('instance', () => {
 
         it('should execute nested calls in the next frame', () => {
             const child = sinon.stub();
-            const parent = sinon.spy(function () {
+            const parent = sinon.spy(() => {
                 api.add(child);
             });
 
@@ -242,7 +242,7 @@ describe('instance', () => {
             it('should also pass the duration to mutli-step calls', () => {
                 const duration = 10;
                 const child = sinon.stub();
-                const parent = sinon.spy(function () {
+                const parent = sinon.spy(() => {
                     api.add(child);
                 });
 
@@ -255,7 +255,7 @@ describe('instance', () => {
 
             it('should increase the time taken by the duration in each step', () => {
                 const child = sinon.stub();
-                const parent = sinon.spy(function () {
+                const parent = sinon.spy(() => {
                     api.add(child);
                 });
                 const parentDuration = 10;
@@ -285,7 +285,7 @@ describe('instance', () => {
         });
 
         it('should execute all nested callbacks', () => {
-            const parent = sinon.spy(function () {
+            const parent = sinon.spy(() => {
                 api.add(child);
             });
             const child = sinon.stub();
@@ -298,7 +298,7 @@ describe('instance', () => {
         });
 
         it('should execute all nested callbacks with the stubs frame duration', () => {
-            const parent = sinon.spy(function () {
+            const parent = sinon.spy(() => {
                 api.add(child);
             });
             const child = sinon.stub();
@@ -311,7 +311,7 @@ describe('instance', () => {
         });
 
         it('should allow you to flush callbacks with a provided frame duration', () => {
-            const parent = sinon.spy(function () {
+            const parent = sinon.spy(() => {
                 api.add(child);
             });
             const child = sinon.stub();
@@ -340,7 +340,7 @@ describe('instance', () => {
         });
 
         it('should remove all callbacks in the current future frames without calling them', () => {
-            const parent = sinon.spy(function () {
+            const parent = sinon.spy(() => {
                 api.add(child);
             });
             const child = sinon.stub();
@@ -535,8 +535,10 @@ describe('replaceRaf', () => {
             console.warn.restore();
         });
 
-        it('should support a single root as an argument', () => {
-           const root = {};
+        it.only('should support a single root as an argument', () => {
+            const root = {};
+
+            console.log('replaceRaf', replaceRaf);
 
             replaceRaf(root);
 
