@@ -2,8 +2,15 @@
   "presets": [
     "es2015"
   ],
+  "env": {
+    "test": {
+      "plugins": [
+        "istanbul"
+      ]
+    }
+  },
   "plugins": [
-        // remove flow types
-        "transform-flow-strip-types"
-    ]
+    // remove flow types
+    "transform-flow-strip-types"
+  ]
 }
