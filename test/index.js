@@ -535,10 +535,8 @@ describe('replaceRaf', () => {
             console.warn.restore();
         });
 
-        it.only('should support a single root as an argument', () => {
+        it('should support a single root as an argument', () => {
             const root = {};
-
-            console.log('replaceRaf', replaceRaf);
 
             replaceRaf(root);
 
