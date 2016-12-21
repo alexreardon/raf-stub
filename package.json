@@ -17,16 +17,17 @@
     "eslint": "3.12.1",
     "isparta": "4.0.0",
     "mocha": "3.2.0",
-    "sinon": "1.17.6"
+    "sinon": "1.17.6",
+    "yarn": "0.18.1"
   },
   "scripts": {
-    "test": "npm run lint && ./node_modules/.bin/mocha test --compilers js:babel-core/register",
-    "lint": "./node_modules/.bin/eslint src test",
-    "lint-fix": "npm run lint - --fix",
-    "compile": "./node_modules/.bin/babel src --out-dir lib",
-    "prepublish": "npm run compile",
-    "coverage": "node_modules/.bin/isparta cover --include-all-sources node_modules/mocha/bin/_mocha -- test --compilers js:babel-core/register",
-    "codecov": "npm run coverage && ./node_modules/.bin/codecov"
+    "test": "yarn run lint && mocha test --compilers js:babel-core/register",
+    "lint": "eslint src test",
+    "lint-fix": "yarn run lint - --fix",
+    "compile": "babel src --out-dir lib",
+    "prepublish": "yarn run compile",
+    "coverage": "isparta cover --include-all-sources node_modules/mocha/bin/_mocha -- test --compilers js:babel-core/register",
+    "codecov": "yarn run coverage && codecov"
   },
   "keywords": [
     "raf",
