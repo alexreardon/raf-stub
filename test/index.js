@@ -1,6 +1,7 @@
+// @flow
 import createStub, {replaceRaf} from '../src';
 import sinon from 'sinon';
-import {expect} from 'chai';
+import {expect, beforeEach, afterEach, describe, it} from 'chai';
 import now from 'performance-now';
 
 const defaultDuration = 1000 / 60;
@@ -100,7 +101,7 @@ describe('instance', () => {
         });
 
         it('should do nothing if it cannot find a matching id', () => {
-            const id = 'some fake id';
+            const id = 6;
 
             expect(() => api.remove(id)).to.not.throw();
             expect(api.remove(id)).to.be.undefined;
@@ -559,5 +560,4 @@ describe('replaceRaf', () => {
             expect(console.warn.called).to.be.true;
         });
     });
-
 });

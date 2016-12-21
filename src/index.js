@@ -7,10 +7,10 @@ type Api = {
     remove: (id: number) => void,
     flush: (duration: ?number) => void,
     reset: () => void,
-    step: (steps: number, duration: number) => void
+    step: (steps?: number, duration?: ?number) => void
 };
 
-const createStub = (frameDuration: number = defaultDuration, startTime: number = now()): Api => {
+export default function createStub (frameDuration: number = defaultDuration, startTime: number = now()): Api {
     const frames = [];
     let frameId = 0;
     let currentTime = startTime;
@@ -43,7 +43,7 @@ const createStub = (frameDuration: number = defaultDuration, startTime: number =
         frames.splice(index, 1);
     };
 
-    const flush = (duration = frameDuration): void => {
+    const flush = (duration? = frameDuration): void => {
         while (frames.length) {
             step(1, duration);
         }
@@ -54,7 +54,7 @@ const createStub = (frameDuration: number = defaultDuration, startTime: number =
         currentTime = startTime;
     };
 
-    const step = (steps = 1, duration = frameDuration): void => {
+    const step = (steps?: number = 1, duration?: ?number = frameDuration): void => {
         if (steps === 0) {
             return;
         }
@@ -80,15 +80,19 @@ const createStub = (frameDuration: number = defaultDuration, startTime: number =
     return api;
 };
 
-export default createStub;
-
 // all calls to replaceRaf get the same stub;
-type Options = {
-    duration: number,
-    startTime: number
+type ReplaceRafOptions = {
+    duration?: number,
+    startTime?: number
 };
 
-export function replaceRaf(roots: any[] = [], {duration = defaultDuration, startTime = now()}: Options = {}) {
+// 0.3.x api
+declare function replaceRaf(...rest: Array<Object>): void;
+
+// new api
+declare function replaceRaf(roots?: Object[], options?: ?ReplaceRafOptions): void;
+
+export function replaceRaf(roots?: Object[] = [], {duration = defaultDuration, startTime = now()}: ReplaceRafOptions = {}) {
     // 0.3.x api support
     if (arguments.length && !Array.isArray(roots)) {
         console.warn('replaceRaf(roots) has been depreciated. Please now use replaceRaf([roots], options). See here for more details: https://github.com/alexreardon/raf-stub/releases');
