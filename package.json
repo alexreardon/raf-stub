@@ -14,6 +14,7 @@
     "babel-cli": "6.16.0",
     "babel-core": "6.18.0",
     "babel-eslint": "7.1.1",
+    "babel-plugin-istanbul": "3.0.0",
     "babel-plugin-transform-flow-strip-types": "6.21.0",
     "babel-preset-es2015": "6.18.0",
     "chai": "3.5.0",
@@ -23,8 +24,8 @@
     "flow-bin": "0.37.4",
     "isparta": "4.0.0",
     "mocha": "3.2.0",
-    "sinon": "1.17.6",
-    "yarn": "0.18.1"
+    "nyc": "10.0.0",
+    "sinon": "1.17.6"
   },
   "scripts": {
     "test": "yarn run lint && yarn run typecheck && yarn run test:fast",
@@ -34,7 +35,6 @@
     "lint:fix": "yarn run lint --fix",
     "compile": "babel src --out-dir lib",
     "prepublish": "yarn run compile",
-    "coverage": "isparta cover --include-all-sources node_modules/mocha/bin/_mocha -- test --compilers js:babel-core/register",
     "codecov": "yarn run coverage && codecov"
   },
   "keywords": [

@@ -1,7 +1,8 @@
 // @flow
-import createStub, {replaceRaf} from '../src';
+import createStub, { replaceRaf } from '../src';
 import sinon from 'sinon';
-import {expect, beforeEach, afterEach, describe, it} from 'chai';
+import { expect } from 'chai';
+import { it, beforeEach, afterEach, describe } from 'mocha';
 import now from 'performance-now';
 
 const defaultDuration = 1000 / 60;
@@ -179,7 +180,7 @@ describe('instance', () => {
             it('should respect implicit bindings', () => {
                 const bar = {
                     a: 5,
-                    foo
+                    foo,
                 };
                 const callback = sinon.spy(function () {
                     return bar.foo();
@@ -193,7 +194,7 @@ describe('instance', () => {
 
             it('should respect explicit bindings', () => {
                 const bar = {
-                    a: 5
+                    a: 5,
                 };
                 const callback = sinon.spy(function () {
                     return foo.call(bar);
@@ -207,7 +208,7 @@ describe('instance', () => {
 
             it('should respect hard bindings', () => {
                 const bar = {
-                    a: 5
+                    a: 5,
                 };
                 const callback = sinon.spy(function () {
                     return foo.bind(bar)();
@@ -487,7 +488,7 @@ describe('replaceRaf', () => {
             const root = {};
             const callback = sinon.stub();
 
-            replaceRaf([root], {startTime});
+            replaceRaf([root], { startTime });
 
             root.requestAnimationFrame(callback);
             root.requestAnimationFrame.flush();
@@ -502,7 +503,7 @@ describe('replaceRaf', () => {
 
             replaceRaf([root], {
                 startTime,
-                duration: customDuration
+                duration: customDuration,
             });
 
             root.requestAnimationFrame(callback);
@@ -517,7 +518,7 @@ describe('replaceRaf', () => {
             const customStartTime = startTime + 1000;
 
             replaceRaf([root], {
-                startTime: customStartTime
+                startTime: customStartTime,
             });
 
             root.requestAnimationFrame(callback);

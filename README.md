@@ -1,8 +1,10 @@
 # raf-stub
 
 [![Build Status](https://travis-ci.org/alexreardon/raf-stub.svg?branch=master)](https://travis-ci.org/alexreardon/raf-stub)
+![npm](https://img.shields.io/npm/dm/raf-stub.svg)
 [![Code coverage](https://codecov.io/github/alexreardon/raf-stub/coverage.svg)](https://codecov.io/gh/alexreardon/raf-stub)
 [![SemVer](https://img.shields.io/badge/SemVer-2.0.0-brightgreen.svg)](http://semver.org/spec/v2.0.0.html)
+TODO: 1. flow typed 2. fix coverage
 
 Accurate and predictable testing of `requestAnimationFrame` and `cancelAnimationFrame`.
 
@@ -359,7 +361,7 @@ var replaceRaf = require('raf-stub').replaceRaf;
 ```
 
 ## Semantic Versioning
-This project used [Semantic versioning 2.0.0](http://semver.org/) to ensure a consistent versioning strategy. 
+This project used [Semantic versioning 2.0.0](http://semver.org/) to ensure a consistent versioning strategy.
 
 `X.Y.Z` (major, minor, patch)
 
@@ -377,7 +379,7 @@ These examples will allow changes to *minor* and *patch* versions but not *major
 `^$major.$minor.$patch` (eg `^1.0.0`)
 
 
-##### [X ranges](https://docs.npmjs.com/misc/semver#x-ranges-12x-1x-12-) 
+##### [X ranges](https://docs.npmjs.com/misc/semver#x-ranges-12x-1x-12-)
 
 `$major.x` (eg `1.x`)
 

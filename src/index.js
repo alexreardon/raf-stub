@@ -26,7 +26,7 @@ export default function createStub (frameDuration: number = defaultDuration, sta
 
         frames.push({
             id,
-            callback
+            callback,
         });
 
         return id;
@@ -74,11 +74,11 @@ export default function createStub (frameDuration: number = defaultDuration, sta
         remove,
         reset,
         flush,
-        step
+        step,
     };
 
     return api;
-};
+}
 
 // all calls to replaceRaf get the same stub;
 type ReplaceRafOptions = {
@@ -87,12 +87,13 @@ type ReplaceRafOptions = {
 };
 
 // 0.3.x api
+/* eslint-disable no-redeclare*/
 declare function replaceRaf(...rest: Array<Object>): void;
 
 // new api
 declare function replaceRaf(roots?: Object[], options?: ?ReplaceRafOptions): void;
 
-export function replaceRaf(roots?: Object[] = [], {duration = defaultDuration, startTime = now()}: ReplaceRafOptions = {}) {
+export function replaceRaf(roots?: Object[] = [], { duration = defaultDuration, startTime = now() }: ReplaceRafOptions = {}) {
     // 0.3.x api support
     if (arguments.length && !Array.isArray(roots)) {
         console.warn('replaceRaf(roots) has been depreciated. Please now use replaceRaf([roots], options). See here for more details: https://github.com/alexreardon/raf-stub/releases');
@@ -111,9 +112,10 @@ export function replaceRaf(roots?: Object[] = [], {duration = defaultDuration, s
         Object.assign(root.requestAnimationFrame, {
             step: stub.step,
             flush: stub.flush,
-            reset: stub.reset
+            reset: stub.reset,
         });
 
         root.cancelAnimationFrame = stub.remove;
     });
-};
+}
+/* eslint-enable no-redeclare*/
