@@ -2,13 +2,13 @@
 const now = require('performance-now');
 const defaultDuration: number = 1000 / 60;
 
-type Api = {
+type Api = {|
     add: (cb: Function) => number,
     remove: (id: number) => void,
     flush: (duration: ?number) => void,
     reset: () => void,
     step: (steps?: number, duration?: ?number) => void
-};
+|};
 
 export default function createStub (frameDuration: number = defaultDuration, startTime: number = now()): Api {
     const frames = [];
