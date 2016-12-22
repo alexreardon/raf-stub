@@ -86,8 +86,8 @@ type ReplaceRafOptions = {
     startTime?: number
 };
 
-// 0.3.x api
 /* eslint-disable no-redeclare*/
+// 0.3.x api
 declare function replaceRaf(...rest: Array<Object>): void;
 
 // new api
