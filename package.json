@@ -1,6 +1,6 @@
 {
   "name": "raf-stub",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Accurate and predictable testing of requestAnimationFrame and cancelAnimationFrame",
   "main": "lib/index.js",
   "module": "src/index.js",
