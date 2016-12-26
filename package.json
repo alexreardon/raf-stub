@@ -8,9 +8,6 @@
   "dependencies": {
     "performance-now": "0.2.0"
   },
-  "engines": {
-    "node": "^6.7.0"
-  },
   "devDependencies": {
     "babel-cli": "6.16.0",
     "babel-core": "6.18.0",
