@@ -9,7 +9,7 @@
     "performance-now": "0.2.0"
   },
   "devDependencies": {
-    "babel-cli": "6.16.0",
+    "babel-cli": "6.18.0",
     "babel-core": "6.18.0",
     "babel-eslint": "7.1.1",
     "babel-plugin-istanbul": "3.0.0",
