@@ -22,7 +22,7 @@
     "flow-copy-source": "1.1.0",
     "mocha": "3.2.0",
     "rimraf": "2.5.4",
-    "sinon": "1.17.6"
+    "sinon": "1.17.7"
   },
   "scripts": {
     "test": "yarn run lint && yarn run typecheck && yarn run test:fast",
