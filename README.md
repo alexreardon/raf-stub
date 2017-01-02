@@ -425,6 +425,10 @@ var stub = require('raf-stub').default;
 var replaceRaf = require('raf-stub').replaceRaf;
 ```
 
+## Flow types
+
+This library uses and publishes [flow types](https://flowtype.org/). This ensures internal API consistency and also provides a great consumption story. If your project is using flow types then you can get type checking for all of your `raf-stub` calls, as well as auto complete depending on your editor.
+
 ## Semantic Versioning
 
 This project used [Semantic versioning 2.0.0](http://semver.org/) to ensure a consistent versioning strategy.
