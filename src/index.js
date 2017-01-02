@@ -2,7 +2,7 @@
 const now = require('performance-now');
 const defaultDuration: number = 1000 / 60;
 
-type Api = {|
+type Stub = {|
     add: (cb: Function) => number,
     remove: (id: number) => void,
     flush: (duration: ?number) => void,
@@ -10,7 +10,7 @@ type Api = {|
     step: (steps?: number, duration?: ?number) => void
 |};
 
-export default function createStub (frameDuration: number = defaultDuration, startTime: number = now()): Api {
+export default function createStub (frameDuration: number = defaultDuration, startTime: number = now()): Stub {
     const frames = [];
     let frameId = 0;
     let currentTime = startTime;
@@ -43,7 +43,7 @@ export default function createStub (frameDuration: number = defaultDuration, sta
         frames.splice(index, 1);
     };
 
-    const flush = (duration? = frameDuration): void => {
+    const flush = (duration?: ?number = frameDuration): void => {
         while (frames.length) {
             step(1, duration);
         }
@@ -69,7 +69,7 @@ export default function createStub (frameDuration: number = defaultDuration, sta
         return step(steps - 1, duration);
     };
 
-    const api: Api = {
+    const api: Stub = {
         add,
         remove,
         reset,
@@ -80,7 +80,6 @@ export default function createStub (frameDuration: number = defaultDuration, sta
     return api;
 }
 
-// all calls to replaceRaf get the same stub;
 type ReplaceRafOptions = {
     duration?: number,
     startTime?: number
@@ -93,6 +92,7 @@ declare function replaceRaf(...rest: Array<Object>): void;
 // new api
 declare function replaceRaf(roots?: Object[], options?: ?ReplaceRafOptions): void;
 
+// all calls to replaceRaf get the same stub;
 export function replaceRaf(roots?: Object[] = [], { duration = defaultDuration, startTime = now() }: ReplaceRafOptions = {}) {
     // 0.3.x api support
     if (arguments.length && !Array.isArray(roots)) {

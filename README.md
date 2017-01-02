@@ -15,7 +15,7 @@ Accurate and predictable testing of `requestAnimationFrame` and `cancelAnimation
 - Control animations that are orchestrated by third party libraries such as [react-motion](https://github.com/chenglou/react-motion)
 - Control time values passed to your `requestAnimationFrame` callbacks
 
-This is **not** designed to be a polyfill and is only intended for testing code.
+This is **not** designed to be a polyfill and is only intended for test code.
 
 ## Basic usage
 
@@ -53,7 +53,7 @@ describe('stub', () => {
     });
 
     it('should allow us to cancel requestAnimationFrame when we want', () => {
-        var id = render();
+        const id = render();
 
         stub.remove(id);
         stub.step();
@@ -89,7 +89,7 @@ describe('stub', () => {
     });
 
     it('should allow us to cancel requestAnimationFrame when we want', () => {
-        var id = render();
+        const id = render();
 
         cancelAnimationFrame(id);
         requestAnimationFrame.step();
@@ -108,11 +108,30 @@ npm i --save-dev raf-stub
 
 ## stub
 Created by `createStub()`
+
+**type signature**
+
+```js
+type Stub = {|
+    add: (cb: Function) => number,
+    remove: (id: number) => void,
+    flush: (duration: ?number) => void,
+    reset: () => void,
+    step: (steps?: number, duration?: ?number) => void
+|};
+```
+
 An isolated mock that contains it's own state. Each `stub` is independent and have it's own state.
 
-**Note** changing the time values (`startTime`, `frameDuration` and `duration`) does not actually impact how long your test takes to execute, nor does it attach itself to the system clock. It is simply a way for you to have control over the first argument (`currentTime`) to `requestAnimationFrame` callbacks.
+**Note** changing the time values (`startTime`, `frameDuration` and `duration`) do not actually impact how long your test takes to execute, nor does it attach itself to the system clock. It is simply a way for you to have control over the first argument (`currentTime`) to `requestAnimationFrame` callbacks.
 
-### `createStub(?frameDuration = 1000 / 60, ?startTime = performance.now()) => Stub`
+### `createStub()`
+
+**Type signature**
+
+```js
+function createStub (frameDuration: number = 1000 / 60, startTime: number = performance.now()): Stub
+```
 
 **Basic usage**
 
@@ -128,7 +147,13 @@ const startTime = performance.now() + 1000;
 const stub = createStub(frameDuration, startTime);
 ```
 
-### `.add(callback) => Int`
+### `stub.add(callback)`
+
+**Type definition**
+
+```js
+function add (cb: Function): number
+```
 
 Same api as `requestAnimationFrame`. It schedules the callback to be called in the next frame.
 It returns an `id` that can be used to cancel the frame in the future.
@@ -141,24 +166,41 @@ const callback = () => {};
 stub.add(callback);
 ```
 
-### `.remove(id)`
+### `stub.remove(id)`
 
-Same api as `cancelAnimationFrame`. It takes the id of a `add()` call and cancels it.
+**Type definition**
+
+```js
+function remove (id: number): void
+```
+
+Same api as `cancelAnimationFrame(id)`. It takes the id of a `stub.add()` call and cancels it without calling it.
 
 ```js
 const stub = createStub();
-const callback = () => {};
+const callback = () => console.log('hi');
 
-stub.add(callback);
+const id = stub.add(callback);
 
-// remove callback from the current frame
-stub.remove(callback);
+stub.remove(id);
+
+// callback is not called as it is no longer queued
+stub.step();
+
+// *crickets*
 ```
 
-### `.step(?steps=1, ?duration = frameDuration)`
+### `.step()`
+
+**Type definition**
+
+```js
+step: (steps?: number, duration?: ?number) => void
+```
+
 Executes all callbacks in the current frame and optionally additional frames.
 
-- `steps (Int)` => the amount of animation frames you would like to release. This is useful when you have nested calls.
+- `steps` => the amount of animation frames you would like to release. Defaults to `1`. This is useful when you have nested calls.
 - `duration (Number)` => the amount of time the frame takes to execute. The default `duration` value is provided by the `frameDuration` argument to `createStub(frameDuration)`. However, you can override it for a specific `.step()` call using the `duration` argument.
 
 **Simple example**
@@ -218,7 +260,14 @@ stub.step(1, longFrameDuration);
 ```
 
 
-### `.flush(?duration = frameDuration)`
+### `stub.flush()`
+
+** Type definition **
+
+```js
+flush: (duration: ?number) => void
+```
+
 Executes all `requestAnimationFrame` callbacks, including nested calls. It will keep executing frames until there are no frames left. An easy way to to think of this function is "`step()` until there are no more steps left"
 
 - `duration (Number)` => the duration for each frame in the flush - each frame gets the same value. If you want different frames to get different values then use `.step()`. The default `duration` value is provided by the `frameDuration` argument to `createStub(frameDuration)`. However, you can override it for a specific `.flush()` call using the `duration` argument.
@@ -259,6 +308,12 @@ stub.flush(200);
 
 ### `.reset()`
 
+**Type definition**
+
+```js
+reset: () => void
+```
+
 Clears all the frames without executing any callbacks, unlike `flush()` which executes all the callbacks. Reverts the stub to it's initial state. This is similar to `remove(id)` but it does not require an `id`; `reset` will also clear **all** callbacks in the frame whereas `remove(id)` only removes a single one.
 
 ```js
@@ -276,16 +331,27 @@ api.step();
 
 ## replaceRaf
 
-### `replaceRaf(?[roots], ?{frameDuration = 1000/ 60, startTime = performance.now()})`
+### `replaceRaf()`
 
 This function is used to set a `requestAnimationFrame` and `cancelAnimationFrame` on a root (eg `window`).
 
-- `roots (?Array)` => an optional array of roots to be stubbed (eg [`window`, `global`]). If no root is provided then the function will automatically figure out whether to use `window` or `global`
-- `options (?Object)` => optional additional values
+**Type definition**
+
+```js
+type ReplaceRafOptions = {
+    duration?: number,
+    startTime?: number
+};
+
+function replaceRaf(roots?: Object[], options?: ?ReplaceRafOptions): void;
+```
+
+- `roots` => an optional array of roots to be stubbed (eg [`window`, `global`]). If no root is provided then the function will automatically figure out whether to use `window` or `global`
+- `options` => optional additional values to control the stub. These values are passed as the `frameDuration` and `startTime` arguments to `createStub()`
 
 `options`
-- `startTime (Int)` => see `createStub()`
-- `frameDuration (Number)` => see `createStub()`
+- `startTime` => see `createStub()`
+- `frameDuration` => see `createStub()`
 
 
 #### Basic usage
@@ -332,14 +398,13 @@ requestAnimationFrame.flush();
 
 // reset - see stub.reset
 requestAnimationFrame.reset();
-
 ```
 
 See **stub** for api documentation on `step()`, `flush()` and `reset()`.
 
 ### Disclaimers!
 
-- Each call to `replaceRaf` will add a new stub to the `root`. If you want to have the same stub on multiple `roots` then pass them in at the same time (eg `replaceRaf(window, global)`).
+- Each call to `replaceRaf` will add a new stub to the `root`. If you want to have the same stub on multiple `roots` then pass them in at the same time (eg `replaceRaf([window, global])`).
 - If you do a one time setup of `replaceRaf()` in a test setup file you will remember to clear the stub after each test.
 ```js
 requestAnimationFrame.reset();
@@ -361,6 +426,7 @@ var replaceRaf = require('raf-stub').replaceRaf;
 ```
 
 ## Semantic Versioning
+
 This project used [Semantic versioning 2.0.0](http://semver.org/) to ensure a consistent versioning strategy.
 
 `X.Y.Z` (major, minor, patch)
@@ -370,19 +436,6 @@ This project used [Semantic versioning 2.0.0](http://semver.org/) to ensure a co
 - `Z`: patches
 
 A safe `raf-stub` `package.json` dependency would therefore be anything that allows changes to the *minor* or *patch* version
-
-#### Examples
-These examples will allow changes to *minor* and *patch* versions but not *major*
-
-##### [Carrot ranges](https://docs.npmjs.com/misc/semver#caret-ranges-123-025-004) (npm default)
-
-`^$major.$minor.$patch` (eg `^1.0.0`)
-
-
-##### [X ranges](https://docs.npmjs.com/misc/semver#x-ranges-12x-1x-12-)
-
-`$major.x` (eg `1.x`)
-
 
 ## Recipes
 
