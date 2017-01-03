@@ -126,7 +126,7 @@ An isolated mock that contains it's own state. Each `stub` is independent and ha
 
 ### `createStub()`
 
-**Type signature**
+**type signature**
 
 ```js
 function createStub (frameDuration: number = 1000 / 60, startTime: number = performance.now()): Stub
@@ -148,7 +148,7 @@ const stub = createStub(frameDuration, startTime);
 
 ### `stub.add(callback)`
 
-**Type definition**
+**type signature**
 
 ```js
 function add (cb: Function): number
@@ -167,7 +167,7 @@ stub.add(callback);
 
 ### `stub.remove(id)`
 
-**Type definition**
+**type signature**
 
 ```js
 function remove (id: number): void
@@ -191,7 +191,7 @@ stub.step();
 
 ### `.step()`
 
-**Type definition**
+**type signature**
 
 ```js
 step: (steps?: number, duration?: ?number) => void
@@ -261,7 +261,7 @@ stub.step(1, longFrameDuration);
 
 ### `stub.flush()`
 
-** Type definition **
+**type signature**
 
 ```js
 flush: (duration: ?number) => void
@@ -307,7 +307,7 @@ stub.flush(200);
 
 ### `.reset()`
 
-**Type definition**
+**type signature**
 
 ```js
 reset: () => void
@@ -334,7 +334,7 @@ api.step();
 
 This function is used to set a `requestAnimationFrame` and `cancelAnimationFrame` on a root (eg `window`).
 
-**Type definition**
+**type signature**
 
 ```js
 type ReplaceRafOptions = {
