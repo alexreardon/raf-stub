@@ -81,31 +81,18 @@ export default function createStub (frameDuration: number = defaultDuration, sta
 }
 
 type ReplaceRafOptions = {
-    duration?: number,
+    frameDuration?: number,
     startTime?: number
 };
 
-/* eslint-disable no-redeclare*/
-// 0.3.x api
-declare function replaceRaf(...rest: Array<Object>): void;
-
-// new api
-declare function replaceRaf(roots?: Object[], options?: ?ReplaceRafOptions): void;
-
-// all calls to replaceRaf get the same stub;
-export function replaceRaf(roots?: Object[] = [], { duration = defaultDuration, startTime = now() }: ReplaceRafOptions = {}) {
-    // 0.3.x api support
-    if (arguments.length && !Array.isArray(roots)) {
-        console.warn('replaceRaf(roots) has been depreciated. Please now use replaceRaf([roots], options). See here for more details: https://github.com/alexreardon/raf-stub/releases');
-        roots = Array.from(arguments);
-    }
-
-    // automatic usage of 'window' or 'global'
+export function replaceRaf(roots?: Object[] = [], { frameDuration = defaultDuration, startTime = now() }: ReplaceRafOptions = {}) {
+    // automatic usage of 'window' or 'global' if no roots are provided
     if (!roots.length) {
         roots.push(typeof window !== 'undefined' ? window : global);
     }
 
-    const stub = createStub(duration, startTime);
+    // all roots share the same stub
+    const stub = createStub(frameDuration, startTime);
 
     roots.forEach(root => {
         root.requestAnimationFrame = stub.add;
@@ -118,4 +105,3 @@ export function replaceRaf(roots?: Object[] = [], { duration = defaultDuration, 
         root.cancelAnimationFrame = stub.remove;
     });
 }
-/* eslint-enable no-redeclare*/
