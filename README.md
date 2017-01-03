@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.org/alexreardon/raf-stub.svg?branch=master)](https://travis-ci.org/alexreardon/raf-stub)
 ![npm](https://img.shields.io/npm/dm/raf-stub.svg)
 [![SemVer](https://img.shields.io/badge/SemVer-2.0.0-brightgreen.svg)](http://semver.org/spec/v2.0.0.html)
-[![Code coverage](https://codecov.io/github/alexreardon/raf-stub/coverage.svg)](https://codecov.io/gh/alexreardon/raf-stub)
+[![Code coverage](https://img.shields.io/codecov/c/github/alexreardon/raf-stub/master.svg)](https://codecov.io/gh/alexreardon/raf-stub)
 
 Accurate and predictable testing of `requestAnimationFrame` and `cancelAnimationFrame`.
 
