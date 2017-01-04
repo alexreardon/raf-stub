@@ -309,7 +309,9 @@ describe('instance', () => {
             api.flush();
 
             expect(parent.calledWith(startTime + frameDuration)).to.be.true;
-            expect(child.calledWith(startTime + 2 * frameDuration)).to.be.true;
+            // Explicitly adding rather than using (2 * frameDuration).
+            // See description in next test
+            expect(child.calledWith(startTime + frameDuration + frameDuration)).to.be.true;
         });
 
         it('should allow you to flush callbacks with a provided frame duration', () => {
@@ -323,9 +325,15 @@ describe('instance', () => {
             api.flush(customDuration);
 
             expect(parent.calledWith(startTime + customDuration)).to.be.true;
-            expect(child.calledWith(startTime + 2 * customDuration)).to.be.true;
-        });
 
+            // now() can return a fraction such as 57.378003.
+            // When this is added with itself it causes a language precision
+            // problem: 0.1 + 0.2 === 0.30000000000000004;
+            // Details:
+            // https://github.com/alexreardon/raf-stub/issues/42
+            // https://github.com/getify/You-Dont-Know-JS/blob/master/types%20%26%20grammar/ch2.md#small-decimal-values
+            expect(child.args[0][0]).to.eql(startTime + customDuration + customDuration);
+        });
     });
 
     describe('reset', () => {
