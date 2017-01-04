@@ -1,11 +1,10 @@
 // @flow
-import createStub, { replaceRaf } from '../src';
+import createStub, { replaceRaf, defaultDuration } from '../src';
+import { add as safeAdd } from '../src/get-precise-values';
 import sinon from 'sinon';
 import { expect } from 'chai';
 import { it, beforeEach, afterEach, describe } from 'mocha';
 import now from 'performance-now';
-
-const defaultDuration = 1000 / 60;
 
 describe('createStub', () => {
     it('should allow for different stub namespaces', () => {
@@ -32,19 +31,19 @@ describe('createStub', () => {
         api.add(callback);
         api.flush();
 
-        expect(callback.calledWith(startTime + customDuration)).to.be.true;
+        expect(callback.calledWith(safeAdd(startTime, customDuration))).to.be.true;
     });
 
     it('should allow you to pass in a custom start time', () => {
         const customDuration = 1000;
-        const startTime = now() + 1000;
+        const startTime = safeAdd(now(), 1000);
         const callback = sinon.stub();
         const api = createStub(customDuration, startTime);
 
         api.add(callback);
         api.flush();
 
-        expect(callback.calledWith(startTime + customDuration)).to.be.true;
+        expect(callback.calledWith(safeAdd(startTime, customDuration))).to.be.true;
     });
 });
 
@@ -228,7 +227,7 @@ describe('instance', () => {
                 api.add(callback);
                 api.step();
 
-                expect(callback.calledWith(startTime + frameDuration)).to.be.true;
+                expect(callback.calledWith(safeAdd(startTime, frameDuration))).to.be.true;
             });
 
             it('should pass the current time + duration to callbacks', () => {
@@ -238,7 +237,7 @@ describe('instance', () => {
                 api.add(callback);
                 api.step(1, duration);
 
-                expect(callback.calledWith(startTime + duration)).to.be.true;
+                expect(callback.calledWith(safeAdd(startTime, duration))).to.be.true;
             });
 
             it('should also pass the duration to mutli-step calls', () => {
@@ -251,8 +250,8 @@ describe('instance', () => {
                 api.add(parent);
                 api.step(2, duration);
 
-                expect(parent.calledWith(startTime + duration)).to.be.true;
-                expect(child.calledWith(startTime + duration * 2)).to.be.true;
+                expect(parent.calledWith(safeAdd(startTime, duration))).to.be.true;
+                expect(child.calledWith(safeAdd(startTime, duration * 2))).to.be.true;
             });
 
             it('should increase the time taken by the duration in each step', () => {
@@ -267,12 +266,11 @@ describe('instance', () => {
                 api.step(1, parentDuration);
                 api.step(1, childDuration);
 
-                expect(parent.calledWith(startTime + parentDuration)).to.be.true;
-                expect(child.calledWith(startTime + parentDuration + childDuration)).to.be.true;
+                expect(parent.calledWith(safeAdd(startTime, parentDuration))).to.be.true;
+                expect(child.calledWith(safeAdd(startTime, parentDuration, childDuration))).to.be.true;
             });
         });
     });
-
     describe('flush', () => {
         it('should execute all callbacks in the current frame', () => {
             const callback1 = sinon.stub();
@@ -308,10 +306,8 @@ describe('instance', () => {
             api.add(parent);
             api.flush();
 
-            expect(parent.calledWith(startTime + frameDuration)).to.be.true;
-            // Explicitly adding rather than using (2 * frameDuration).
-            // See description in next test
-            expect(child.calledWith(startTime + frameDuration + frameDuration)).to.be.true;
+            expect(parent.calledWith(safeAdd(startTime, frameDuration))).to.be.true;
+            expect(child.calledWith(safeAdd(startTime, 2 * frameDuration))).to.be.true;
         });
 
         it('should allow you to flush callbacks with a provided frame duration', () => {
@@ -324,15 +320,8 @@ describe('instance', () => {
             api.add(parent);
             api.flush(customDuration);
 
-            expect(parent.calledWith(startTime + customDuration)).to.be.true;
-
-            // now() can return a fraction such as 57.378003.
-            // When this is added with itself it causes a language precision
-            // problem: 0.1 + 0.2 === 0.30000000000000004;
-            // Details:
-            // https://github.com/alexreardon/raf-stub/issues/42
-            // https://github.com/getify/You-Dont-Know-JS/blob/master/types%20%26%20grammar/ch2.md#small-decimal-values
-            expect(child.args[0][0]).to.eql(startTime + customDuration + customDuration);
+            expect(parent.calledWith(safeAdd(startTime, customDuration))).to.be.true;
+            expect(child.calledWith(safeAdd(startTime, 2 * customDuration))).to.be.true;
         });
     });
 
@@ -374,8 +363,8 @@ describe('instance', () => {
             api.add(callback2);
             api.flush();
 
-            expect(callback1.calledWith(startTime + frameDuration)).to.be.true;
-            expect(callback2.calledWith(startTime + frameDuration)).to.be.true;
+            expect(callback1.calledWith(safeAdd(startTime, frameDuration))).to.be.true;
+            expect(callback2.calledWith(safeAdd(startTime, frameDuration))).to.be.true;
         });
     });
 });
@@ -501,7 +490,7 @@ describe('replaceRaf', () => {
             root.requestAnimationFrame(callback);
             root.requestAnimationFrame.flush();
 
-            expect(callback.calledWith(startTime + defaultDuration)).to.be.true;
+            expect(callback.calledWith(safeAdd(startTime, defaultDuration))).to.be.true;
         });
 
         it('should use the custom duration if none is provided', () => {
@@ -517,13 +506,13 @@ describe('replaceRaf', () => {
             root.requestAnimationFrame(callback);
             root.requestAnimationFrame.flush();
 
-            expect(callback.calledWith(startTime + customDuration)).to.be.true;
+            expect(callback.calledWith(safeAdd(startTime, customDuration))).to.be.true;
         });
 
         it('should use the custom start time if none is provided', () => {
             const root = {};
             const callback = sinon.stub();
-            const customStartTime = startTime + 1000;
+            const customStartTime = safeAdd(startTime, 1000);
 
             replaceRaf([root], {
                 startTime: customStartTime,
@@ -532,7 +521,7 @@ describe('replaceRaf', () => {
             root.requestAnimationFrame(callback);
             root.requestAnimationFrame.flush();
 
-            expect(callback.calledWith(customStartTime + defaultDuration)).to.be.true;
+            expect(callback.calledWith(safeAdd(customStartTime, defaultDuration))).to.be.true;
         });
     });
 
