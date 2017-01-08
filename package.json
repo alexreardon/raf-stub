@@ -28,7 +28,7 @@
   },
   "scripts": {
     "test": "yarn run lint && yarn run typecheck && yarn run test:fast",
-    "test:fast": "mocha test --compilers js:babel-core/register",
+    "test:fast": "mocha test --compilers js:babel-core/register --globals global",
     "typecheck": "flow check",
     "lint": "eslint src test -",
     "lint:fix": "yarn run lint --fix",
