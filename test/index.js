@@ -1,11 +1,10 @@
 // @flow
-import createStub, { replaceRaf } from '../src';
 import sinon from 'sinon';
 import { expect } from 'chai';
 import { it, beforeEach, afterEach, describe } from 'mocha';
 import now from 'performance-now';
-
-const defaultDuration = 1000 / 60;
+import createStub, { replaceRaf } from '../src';
+import { defaultFrameDuration } from '../src/constants';
 
 describe('createStub', () => {
     it('should allow for different stub namespaces', () => {
@@ -309,7 +308,8 @@ describe('instance', () => {
             api.flush();
 
             expect(parent.calledWith(startTime + frameDuration)).to.be.true;
-            expect(child.calledWith(startTime + 2 * frameDuration)).to.be.true;
+            // double adding to replicate multiple addition precision issues
+            expect(child.calledWith(startTime + frameDuration + frameDuration)).to.be.true;
         });
 
         it('should allow you to flush callbacks with a provided frame duration', () => {
@@ -323,7 +323,8 @@ describe('instance', () => {
             api.flush(customDuration);
 
             expect(parent.calledWith(startTime + customDuration)).to.be.true;
-            expect(child.calledWith(startTime + 2 * customDuration)).to.be.true;
+            // double adding to replicate multiple addition precision issues
+            expect(child.calledWith(startTime + customDuration + customDuration)).to.be.true;
         });
 
     });
@@ -493,13 +494,13 @@ describe('replaceRaf', () => {
             root.requestAnimationFrame(callback);
             root.requestAnimationFrame.flush();
 
-            expect(callback.calledWith(startTime + defaultDuration)).to.be.true;
+            expect(callback.calledWith(startTime + defaultFrameDuration)).to.be.true;
         });
 
         it('should use the custom duration if none is provided', () => {
             const root = {};
             const callback = sinon.stub();
-            const customDuration = defaultDuration * 1000;
+            const customDuration = defaultFrameDuration * 1000;
 
             replaceRaf([root], {
                 startTime,
@@ -524,7 +525,7 @@ describe('replaceRaf', () => {
             root.requestAnimationFrame(callback);
             root.requestAnimationFrame.flush();
 
-            expect(callback.calledWith(customStartTime + defaultDuration)).to.be.true;
+            expect(callback.calledWith(customStartTime + defaultFrameDuration)).to.be.true;
         });
     });
 
@@ -553,6 +554,7 @@ describe('replaceRaf', () => {
 
             expect(root1.requestAnimationFrame).to.equal(root2.requestAnimationFrame);
         });
+
         it('should log a deprecation message', () => {
             const root = {};
 
