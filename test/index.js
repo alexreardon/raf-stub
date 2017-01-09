@@ -504,7 +504,7 @@ describe('replaceRaf', () => {
 
             replaceRaf([root], {
                 startTime,
-                duration: customDuration,
+                frameDuration: customDuration,
             });
 
             root.requestAnimationFrame(callback);
@@ -526,41 +526,6 @@ describe('replaceRaf', () => {
             root.requestAnimationFrame.flush();
 
             expect(callback.calledWith(customStartTime + defaultFrameDuration)).to.be.true;
-        });
-    });
-
-    describe('0.3.x support', () => {
-        beforeEach(() => {
-            sinon.stub(console, 'warn');
-        });
-
-        afterEach(() => {
-            console.warn.restore();
-        });
-
-        it('should support a single root as an argument', () => {
-            const root = {};
-
-            replaceRaf(root);
-
-            expect(root.requestAnimationFrame).to.be.a.function;
-        });
-
-        it('should support passing in multiple roots separated by commas', () => {
-            const root1 = {};
-            const root2 = {};
-
-            replaceRaf(root1, root2);
-
-            expect(root1.requestAnimationFrame).to.equal(root2.requestAnimationFrame);
-        });
-
-        it('should log a deprecation message', () => {
-            const root = {};
-
-            replaceRaf(root);
-
-            expect(console.warn.called).to.be.true;
         });
     });
 });
