@@ -1,7 +1,7 @@
 # raf-stub
 
 [![Build Status](https://travis-ci.org/alexreardon/raf-stub.svg?branch=master)](https://travis-ci.org/alexreardon/raf-stub)
-[![Code coverage](https://img.shields.io/codecov/c/github/alexreardon/raf-stub/master.svg)](https://codecov.io/gh/alexreardon/raf-stub)
+[![codecov](https://codecov.io/gh/alexreardon/raf-stub/branch/master/graph/badge.svg)](https://codecov.io/gh/alexreardon/raf-stub)
 ![npm](https://img.shields.io/npm/dm/raf-stub.svg)
 [![SemVer](https://img.shields.io/badge/SemVer-2.0.0-brightgreen.svg)](http://semver.org/spec/v2.0.0.html)
 
@@ -101,8 +101,12 @@ describe('stub', () => {
 
 ## Installation
 
-```
-npm i --save-dev raf-stub
+```bash
+## npm
+npm install raf-stub --save-dev
+
+## yarn
+yarn add raf-stub --dev
 ```
 
 ## stub
@@ -440,6 +444,70 @@ This project used [Semantic versioning 2.0.0](http://semver.org/) to ensure a co
 
 A safe `raf-stub` `package.json` dependency would therefore be anything that allows changes to the *minor* or *patch* version
 
+## Frame `currentTime` precision warning
+
+When you a frame is called by `.step()` or `.flush()` it [is given the `currentTime` as the first argument](https://developer.mozilla.org/en-US/docs/Web/API/window/requestAnimationFrame).
+
+```js
+const stub = createStub();
+const callback = currentTime => console.log(`the time is ${currentTime}`);
+
+stub.add(callback);
+stub.step();
+
+// console.log('the current time is 472759.63');
+```
+
+By default `frameDuration` is `1000 / 60` and startTime is `performance.now`. Both of these numbers are ugly decimals (eg `16.6666667`). When they are added together in `.step()` or `.flush()` this can cause [known precision issues in JavaScript](https://github.com/getify/You-Dont-Know-JS/blob/master/types%20%26%20grammar/ch2.md#small-decimal-values). You can find some further discussion about it's impact [here](https://github.com/alexreardon/raf-stub/issues/42).
+
+**Work arounds**
+If you want to assert the current time inside of a callback - be sure to *add* the expected time values:
+
+```js
+const frameDuration = 1000 / 60;
+const startTime = performance.now();
+const stub = createStub(frameDuration, startTime);
+const child = sinon.stub();
+const parent = sinon.stub().returns(child);
+
+stub.add(callback);
+stub.step();
+stub.step();
+
+// okay
+expect(parent.calledWith(startTime + frameDuration)).to.be.true;
+
+// not okay - will not mimic precision issues
+// doing this can lead to flakey tests
+expect(child.calledWith(startTime + 2 * frameDuration)).to.be.true;
+
+// okay
+expect(child.calledWith(startTime + frameDuration + frameDuration));
+```
+
+Another simple option is to use integers for **both** `frameDuration` and `startTime`.
+
+```js
+const frameDuration = 16;
+const startTime = 100;
+const stub = createStub(frameDuration, startTime);
+const child = sinon.stub();
+const parent = sinon.stub().returns(child);
+
+stub.add(callback);
+stub.step();
+stub.step();
+
+// okay
+expect(parent.calledWith(startTime + frameDuration)).to.be.true;
+
+// okay
+expect(child.calledWith(startTime + 2 * frameDuration)).to.be.true;
+
+// okay
+expect(child.calledWith(startTime + frameDuration + frameDuration));
+```
+
 ## Recipes
 
 ## `frameDuration` and `startTime`
@@ -589,6 +657,7 @@ require('raf-stub').replaceRaf();
 ```
 
 Then everything will work as expected!
+
 ```js
 // test.js
 import render from 'library';

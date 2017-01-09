@@ -1,24 +1,29 @@
 // @flow
-const now = require('performance-now');
-const defaultDuration: number = 1000 / 60;
+import now from 'performance-now';
+import { defaultFrameDuration } from './constants';
 
 type Stub = {|
     add: (cb: Function) => number,
     remove: (id: number) => void,
-    flush: (duration: ?number) => void,
+    flush: (duration?: number) => void,
     reset: () => void,
-    step: (steps?: number, duration?: ?number) => void
+    step: (steps?: number, duration?: number) => void
 |};
 
-export default function createStub (frameDuration: number = defaultDuration, startTime: number = now()): Stub {
-    const frames = [];
-    let frameId = 0;
-    let currentTime = startTime;
+type Frame = {|
+    id: number,
+    callback: Function
+|};
+
+export default function createStub (frameDuration: number = defaultFrameDuration, startTime: number = now()): Stub {
+    const frames: Frame[] = [];
+    let frameId: number = 0;
+    let currentTime: number = startTime;
 
     const add = (cb: Function): number => {
         const id = ++frameId;
 
-        const callback = (time) => {
+        const callback = (time: number) => {
             cb(time);
             // remove callback from frames after calling it
             remove(id);
@@ -43,7 +48,7 @@ export default function createStub (frameDuration: number = defaultDuration, sta
         frames.splice(index, 1);
     };
 
-    const flush = (duration?: ?number = frameDuration): void => {
+    const flush = (duration?: number = frameDuration): void => {
         while (frames.length) {
             step(1, duration);
         }
@@ -54,11 +59,13 @@ export default function createStub (frameDuration: number = defaultDuration, sta
         currentTime = startTime;
     };
 
-    const step = (steps?: number = 1, duration?: ?number = frameDuration): void => {
+    const step = (steps?: number = 1, duration?: number = frameDuration): void => {
         if (steps === 0) {
             return;
         }
 
+        // This line can cause a precision error if both `currentTime`
+        // and `duration` are numbers with decimal components.
         currentTime = currentTime + duration;
 
         const shallow = frames.slice(0);
@@ -85,7 +92,7 @@ type ReplaceRafOptions = {
     startTime?: number
 };
 
-export function replaceRaf(roots?: Object[] = [], { frameDuration = defaultDuration, startTime = now() }: ReplaceRafOptions = {}) {
+export function replaceRaf(roots?: Object[] = [], { frameDuration = defaultFrameDuration, startTime = now() }: ReplaceRafOptions = {}) {
     // automatic usage of 'window' or 'global' if no roots are provided
     if (!roots.length) {
         roots.push(typeof window !== 'undefined' ? window : global);
