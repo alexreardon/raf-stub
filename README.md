@@ -118,9 +118,9 @@ Created by `createStub()`
 type Stub = {|
     add: (cb: Function) => number,
     remove: (id: number) => void,
-    flush: (duration: ?number) => void,
+    flush: (duration?: number) => void,
     reset: () => void,
-    step: (steps?: number, duration?: ?number) => void
+    step: (steps?: number, duration?: number) => void
 |};
 ```
 
@@ -152,15 +152,16 @@ const stub = createStub(frameDuration, startTime);
 
 ### `stub.add(callback)`
 
+It schedules the callback to be called in the next frame.
+It returns an `id` that can be used to cancel the frame in the future. Same api as `requestAnimationFrame`.
+
+Callbacks will *not* automatically get called after a period of time. You need to explicitly release it using `stub.step()` or `stub.flush()`
+
 **type signature**
 
 ```js
 function add (cb: Function): number
 ```
-
-Same api as `requestAnimationFrame`. It schedules the callback to be called in the next frame.
-It returns an `id` that can be used to cancel the frame in the future.
-Callbacks will *not* automatically get called after a period of time. You need to explicitly release it using `step()` or `flush()`
 
 ```js
 const stub = createStub();
@@ -171,13 +172,13 @@ stub.add(callback);
 
 ### `stub.remove(id)`
 
+It takes the id of a `stub.add()` call and cancels it without calling it. Same api as `cancelAnimationFrame(id)`.
+
 **type signature**
 
 ```js
 function remove (id: number): void
 ```
-
-Same api as `cancelAnimationFrame(id)`. It takes the id of a `stub.add()` call and cancels it without calling it.
 
 ```js
 const stub = createStub();
@@ -195,13 +196,13 @@ stub.step();
 
 ### `.step()`
 
+Executes all callbacks in the current frame and optionally additional frames.
+
 **type signature**
 
 ```js
 step: (steps?: number, duration?: ?number) => void
 ```
-
-Executes all callbacks in the current frame and optionally additional frames.
 
 - `steps` => the amount of animation frames you would like to release. Defaults to `1`. This is useful when you have nested calls.
 - `duration (Number)` => the amount of time the frame takes to execute. The default `duration` value is provided by the `frameDuration` argument to `createStub(frameDuration)`. However, you can override it for a specific `.step()` call using the `duration` argument.
@@ -265,15 +266,15 @@ stub.step(1, longFrameDuration);
 
 ### `stub.flush()`
 
+Executes all `requestAnimationFrame` callbacks, including nested calls. It will keep executing frames until there are no frames left. An easy way to to think of this function is "`step()` until there are no more steps left.
+
 **type signature**
 
 ```js
 flush: (duration: ?number) => void
 ```
 
-Executes all `requestAnimationFrame` callbacks, including nested calls. It will keep executing frames until there are no frames left. An easy way to to think of this function is "`step()` until there are no more steps left"
-
-- `duration (Number)` => the duration for each frame in the flush - each frame gets the same value. If you want different frames to get different values then use `.step()`. The default `duration` value is provided by the `frameDuration` argument to `createStub(frameDuration)`. However, you can override it for a specific `.flush()` call using the `duration` argument.
+- `duration` => the duration for each frame in the flush - each frame gets the same value. If you want different frames to get different values then use `.step()`. The default `duration` value is provided by the `frameDuration` argument to `createStub(frameDuration)`. However, you can override it for a specific `.flush()` call using the `duration` argument.
 
 **Warning** if your code just calls `requestAnimationFrame` in an infinite loop then this will never end. Consider using `.step()` for this use case
 
@@ -311,13 +312,13 @@ stub.flush(200);
 
 ### `.reset()`
 
+Clears all the frames without executing any callbacks, unlike `flush()` which executes all the callbacks. Reverts the stub to it's initial state. This is similar to `remove(id)` but it does not require an `id`; `reset` will also clear **all** callbacks in the frame whereas `remove(id)` only removes a single one.
+
 **type signature**
 
 ```js
 reset: () => void
 ```
-
-Clears all the frames without executing any callbacks, unlike `flush()` which executes all the callbacks. Reverts the stub to it's initial state. This is similar to `remove(id)` but it does not require an `id`; `reset` will also clear **all** callbacks in the frame whereas `remove(id)` only removes a single one.
 
 ```js
 
@@ -336,13 +337,13 @@ api.step();
 
 ### `replaceRaf()`
 
-This function is used to set a `requestAnimationFrame` and `cancelAnimationFrame` on a root (eg `window`).
+This function is used to set overwrite `requestAnimationFrame` and `cancelAnimationFrame` on a root (eg `window`). This is useful if you want to control `requestAnimationFrame` for dependencies.
 
 **type signature**
 
 ```js
 type ReplaceRafOptions = {
-    duration?: number,
+    frameDuration?: number,
     startTime?: number
 };
 
@@ -534,7 +535,7 @@ stub.add(currentTime => {
     if(startTime + currentTime > idealFrameDuration) {
         console.log('a slow frame occured');
     } else {
-    console.log('a standard frame occured');
+        console.log('a standard frame occured');
     }
 });
 
