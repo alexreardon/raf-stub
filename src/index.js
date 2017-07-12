@@ -16,75 +16,75 @@ type Frame = {|
 |};
 
 export default function createStub (frameDuration: number = defaultFrameDuration, startTime: number = now()): Stub {
-    const frames: Frame[] = [];
-    let frameId: number = 0;
-    let currentTime: number = startTime;
+  const frames: Frame[] = [];
+  let frameId: number = 0;
+  let currentTime: number = startTime;
 
-    const add = (cb: Function): number => {
-        const id = ++frameId;
+  const add = (cb: Function): number => {
+    const id = ++frameId;
 
-        const callback = (time: number) => {
-            cb(time);
-            // remove callback from frames after calling it
-            remove(id);
-        };
-
-        frames.push({
-            id,
-            callback,
-        });
-
-        return id;
+    const callback = (time: number) => {
+      cb(time);
+      // remove callback from frames after calling it
+      remove(id);
     };
 
-    const remove = (id: number): void => {
-        const index = frames.findIndex(frame => frame.id === id);
+    frames.push({
+      id,
+      callback,
+    });
 
-        if (index === -1) {
-            return;
-        }
+    return id;
+  };
 
-        // remove frame from array
-        frames.splice(index, 1);
-    };
+  const remove = (id: number): void => {
+    const index = frames.findIndex(frame => frame.id === id);
 
-    const flush = (duration?: number = frameDuration): void => {
-        while (frames.length) {
-            step(1, duration);
-        }
-    };
+    if (index === -1) {
+      return;
+    }
 
-    const reset = (): void => {
-        frames.length = 0;
-        currentTime = startTime;
-    };
+    // remove frame from array
+    frames.splice(index, 1);
+  };
 
-    const step = (steps?: number = 1, duration?: number = frameDuration): void => {
-        if (steps === 0) {
-            return;
-        }
+  const flush = (duration?: number = frameDuration): void => {
+    while (frames.length) {
+      step(1, duration);
+    }
+  };
 
-        // This line can cause a precision error if both `currentTime`
-        // and `duration` are numbers with decimal components.
-        currentTime = currentTime + duration;
+  const reset = (): void => {
+    frames.length = 0;
+    currentTime = startTime;
+  };
 
-        const shallow = frames.slice(0);
-        shallow.forEach(frame => {
-            frame.callback(currentTime);
-        });
+  const step = (steps?: number = 1, duration?: number = frameDuration): void => {
+    if (steps === 0) {
+      return;
+    }
 
-        return step(steps - 1, duration);
-    };
+    // This line can cause a precision error if both `currentTime`
+    // and `duration` are numbers with decimal components.
+    currentTime = currentTime + duration;
 
-    const api: Stub = {
-        add,
-        remove,
-        reset,
-        flush,
-        step,
-    };
+    const shallow = frames.slice(0);
+    shallow.forEach(frame => {
+      frame.callback(currentTime);
+    });
 
-    return api;
+    return step(steps - 1, duration);
+  };
+
+  const api: Stub = {
+    add,
+    remove,
+    reset,
+    flush,
+    step,
+  };
+
+  return api;
 }
 
 type ReplaceRafOptions = {
@@ -93,22 +93,22 @@ type ReplaceRafOptions = {
 };
 
 export function replaceRaf(roots?: Object[] = [], { frameDuration = defaultFrameDuration, startTime = now() }: ReplaceRafOptions = {}) {
-    // automatic usage of 'window' or 'global' if no roots are provided
-    if (!roots.length) {
-        roots.push(typeof window !== 'undefined' ? window : global);
-    }
+  // automatic usage of 'window' or 'global' if no roots are provided
+  if (!roots.length) {
+    roots.push(typeof window !== 'undefined' ? window : global);
+  }
 
-    // all roots share the same stub
-    const stub = createStub(frameDuration, startTime);
+  // all roots share the same stub
+  const stub = createStub(frameDuration, startTime);
 
-    roots.forEach(root => {
-        root.requestAnimationFrame = stub.add;
-        Object.assign(root.requestAnimationFrame, {
-            step: stub.step,
-            flush: stub.flush,
-            reset: stub.reset,
-        });
-
-        root.cancelAnimationFrame = stub.remove;
+  roots.forEach(root => {
+    root.requestAnimationFrame = stub.add;
+    Object.assign(root.requestAnimationFrame, {
+      step: stub.step,
+      flush: stub.flush,
+      reset: stub.reset,
     });
+
+    root.cancelAnimationFrame = stub.remove;
+  });
 }
