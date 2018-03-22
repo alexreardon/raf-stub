@@ -3,16 +3,16 @@ import now from 'performance-now';
 import { defaultFrameDuration } from './constants';
 
 type Stub = {|
-    add: (cb: Function) => number,
-    remove: (id: number) => void,
-    flush: (duration?: number) => void,
-    reset: () => void,
-    step: (steps?: number, duration?: number) => void
+  add: (cb: Function) => number,
+  remove: (id: number) => void,
+  flush: (duration?: number) => void,
+  reset: () => void,
+  step: (steps?: number, duration?: number) => void
 |};
 
 type Frame = {|
-    id: number,
-    callback: Function
+  id: number,
+  callback: Function
 |};
 
 export default function createStub (frameDuration: number = defaultFrameDuration, startTime: number = now()): Stub {
