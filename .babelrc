@@ -1,16 +1,19 @@
 {
   "presets": [
-    "es2015"
+    "flow",
+    ["env", { "modules": false, "loose": true }]
   ],
+  "comments": false,
   "env": {
+    "cjs": {
+      "plugins": [
+        "transform-es2015-modules-commonjs"
+      ]
+    },
     "test": {
       "plugins": [
-        "istanbul"
+        "transform-es2015-modules-commonjs"
       ]
     }
-  },
-  "plugins": [
-    // remove flow types
-    "transform-flow-strip-types"
-  ]
+  }
 }

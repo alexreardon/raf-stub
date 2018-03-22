@@ -1,1 +1,2 @@
-export const defaultFrameDuration = 1000 / 60;
+// @flow
+export const defaultFrameDuration: number = 1000 / 60;
