@@ -1,6 +1,6 @@
 {
   "name": "raf-stub",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "description": "Accurate and predictable testing of requestAnimationFrame and cancelAnimationFrame",
   "main": "lib/index.js",
   "module": "esm/index.js",
