@@ -400,9 +400,8 @@ describe('replaceRaf', () => {
   it('should return stub', () => {
     const root = {};
     const stub = replaceRaf(root);
-    expect(stub).toBe(root.requestAnimationFrame)
+    expect(stub).toBe(root.requestAnimationFrame);
   });
-
 
   it('should add "step" to the root.requestAnimationFrame', () => {
     const root = {};

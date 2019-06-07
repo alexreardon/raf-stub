@@ -105,16 +105,16 @@ type ReplaceRafOptions = {
 
 export function replaceRaf(
   root: ?any,
-  { frameDuration = defaultFrameDuration, startTime = now() }: ReplaceRafOptions = {}
+  { frameDuration = defaultFrameDuration, startTime = now() }: ReplaceRafOptions = {},
 ) {
   // automatic usage of 'window' or 'global' if no roots are provided
   if (root == null) {
-    root = typeof window !== 'undefined' ? window : global
+    root = typeof window !== 'undefined' ? window : global;
   }
 
   // all roots share the same stub
   const stub = createStub(frameDuration, startTime);
   root.requestAnimationFrame = stub.add;
   root.cancelAnimationFrame = stub.remove;
-  return stub.add
+  return stub.add;
 }
