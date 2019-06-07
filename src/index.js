@@ -3,11 +3,17 @@ import now from 'performance-now';
 import { defaultFrameDuration } from './constants';
 
 type Stub = {|
-  add: (cb: Function) => number,
+  add: {
+    [[call]]: (cb: () => void) => number,
+    remove: (id: number) => void,
+    flush: (duration?: number) => void,
+    reset: () => void,
+    step: (steps?: number, duration?: number) => void
+  },
   remove: (id: number) => void,
   flush: (duration?: number) => void,
   reset: () => void,
-  step: (steps?: number, duration?: number) => void
+  step: (steps?: number, duration?: number) => void,
 |};
 
 type Frame = {|
@@ -76,6 +82,11 @@ export default function createStub (frameDuration: number = defaultFrameDuration
     return step(steps - 1, duration);
   };
 
+  add.remove = remove;
+  add.reset = reset;
+  add.flush = flush;
+  add.step = step;
+
   const api: Stub = {
     add,
     remove,
@@ -88,27 +99,22 @@ export default function createStub (frameDuration: number = defaultFrameDuration
 }
 
 type ReplaceRafOptions = {
-    frameDuration?: number,
-    startTime?: number
+  frameDuration?: number,
+  startTime?: number
 };
 
-export function replaceRaf(roots?: Object[] = [], { frameDuration = defaultFrameDuration, startTime = now() }: ReplaceRafOptions = {}) {
+export function replaceRaf(
+  root: ?any,
+  { frameDuration = defaultFrameDuration, startTime = now() }: ReplaceRafOptions = {},
+) {
   // automatic usage of 'window' or 'global' if no roots are provided
-  if (!roots.length) {
-    roots.push(typeof window !== 'undefined' ? window : global);
+  if (root == null) {
+    root = typeof window !== 'undefined' ? window : global;
   }
 
   // all roots share the same stub
   const stub = createStub(frameDuration, startTime);
-
-  roots.forEach(root => {
-    root.requestAnimationFrame = stub.add;
-    Object.assign(root.requestAnimationFrame, {
-      step: stub.step,
-      flush: stub.flush,
-      reset: stub.reset,
-    });
-
-    root.cancelAnimationFrame = stub.remove;
-  });
+  root.requestAnimationFrame = stub.add;
+  root.cancelAnimationFrame = stub.remove;
+  return stub.add;
 }

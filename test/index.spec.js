@@ -378,7 +378,7 @@ describe('replaceRaf', () => {
     const root = {};
     const callback = jest.fn();
 
-    replaceRaf([root]);
+    replaceRaf(root);
     root.requestAnimationFrame(callback);
     root.requestAnimationFrame.flush();
 
@@ -389,7 +389,7 @@ describe('replaceRaf', () => {
     const root = {};
     const callback = jest.fn();
 
-    replaceRaf([root]);
+    replaceRaf(root);
     const id = root.requestAnimationFrame(callback);
     root.cancelAnimationFrame(id);
     root.requestAnimationFrame.flush();
@@ -397,11 +397,17 @@ describe('replaceRaf', () => {
     expect(callback).not.toHaveBeenCalled();
   });
 
+  it('should return stub', () => {
+    const root = {};
+    const stub = replaceRaf(root);
+    expect(stub).toBe(root.requestAnimationFrame);
+  });
+
   it('should add "step" to the root.requestAnimationFrame', () => {
     const root = {};
     const callback = jest.fn();
 
-    replaceRaf([root]);
+    replaceRaf(root);
     root.requestAnimationFrame(callback);
     root.requestAnimationFrame.step();
 
@@ -412,7 +418,7 @@ describe('replaceRaf', () => {
     const root = {};
     const callback = jest.fn();
 
-    replaceRaf([root]);
+    replaceRaf(root);
     root.requestAnimationFrame(callback);
     root.requestAnimationFrame.flush();
 
@@ -423,8 +429,8 @@ describe('replaceRaf', () => {
     const root = {};
     const callback = jest.fn();
 
-    replaceRaf([root]);
-    replaceRaf([root]);
+    replaceRaf(root);
+    replaceRaf(root);
     root.requestAnimationFrame(callback);
     root.requestAnimationFrame.reset();
     root.requestAnimationFrame.flush();
@@ -432,21 +438,12 @@ describe('replaceRaf', () => {
     expect(callback).not.toHaveBeenCalled();
   });
 
-  it('should share stubs between roots', () => {
-    const root1 = {};
-    const root2 = {};
-
-    replaceRaf([root1, root2]);
-
-    expect(root1.requestAnimationFrame).toBe(root2.requestAnimationFrame);
-  });
-
   it('should not share stubs between different calls', () => {
     const root1 = {};
     const root2 = {};
 
-    replaceRaf([root1]);
-    replaceRaf([root2]);
+    replaceRaf(root1);
+    replaceRaf(root2);
 
     expect(root1.requestAnimationFrame).not.toBe(root2.requestAnimationFrame);
   });
@@ -482,7 +479,7 @@ describe('replaceRaf', () => {
       const root = {};
       const callback = jest.fn();
 
-      replaceRaf([root], { startTime });
+      replaceRaf(root, { startTime });
 
       root.requestAnimationFrame(callback);
       root.requestAnimationFrame.flush();
@@ -495,7 +492,7 @@ describe('replaceRaf', () => {
       const callback = jest.fn();
       const customDuration = defaultFrameDuration * 1000;
 
-      replaceRaf([root], {
+      replaceRaf(root, {
         startTime,
         frameDuration: customDuration,
       });
@@ -511,7 +508,7 @@ describe('replaceRaf', () => {
       const callback = jest.fn();
       const customStartTime = startTime + 1000;
 
-      replaceRaf([root], {
+      replaceRaf(root, {
         startTime: customStartTime,
       });
 
