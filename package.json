@@ -2,8 +2,8 @@
   "name": "raf-stub",
   "version": "2.0.2",
   "description": "Accurate and predictable testing of requestAnimationFrame and cancelAnimationFrame",
-  "main": "lib/index.js",
-  "module": "esm/index.js",
+  "main": "dist/raf-stub.cjs.js",
+  "module": "dist/raf-stub.esm.js",
   "sideEffects": false,
   "keywords": [
     "raf",
@@ -36,26 +36,32 @@
     "eslint-plugin-jest": "^22.7.2",
     "eslint-plugin-prettier": "^3.1.0",
     "flow-bin": "0.102.0",
-    "flow-copy-source": "2.0.7",
     "jest": "^24.8.0",
     "prettier": "^1.18.2",
-    "rimraf": "2.6.3"
+    "rimraf": "2.6.3",
+    "rollup": "^1.16.6",
+    "rollup-plugin-babel": "^4.3.3",
+    "rollup-plugin-commonjs": "^10.0.1",
+    "rollup-plugin-replace": "^2.2.0"
   },
+  "files": [
+    "/dist",
+    "/src"
+  ],
   "config": {
     "prettier_target": "*.{js,jsx,md,json} src/**/*.{js,jsx,md,json} test/**/*.{js,jsx,md,json}"
   },
   "scripts": {
-    "build": "yarn run build:clean && yarn run build:lib && yarn run build:esm && yarn run build:flow",
+    "build": "yarn run build:clean && yarn run build:dist && yarn run build:flow",
     "test": "jest",
     "validate": "yarn run lint && yarn run typecheck",
     "lint": "eslint src test",
     "typecheck": "flow check",
     "prettier:check": "yarn prettier --debug-check $npm_package_config_prettier_target",
     "prettier:write": "yarn prettier --write $npm_package_config_prettier_target",
-    "build:clean": "rimraf lib esm",
-    "build:lib": "cross-env NODE_ENV=cjs babel src -d lib",
-    "build:esm": "babel src --out-dir esm",
-    "build:flow": "flow-copy-source --verbose src lib && flow-copy-source --verbose src esm",
+    "build:clean": "rimraf dist",
+    "build:dist": "rollup -c",
+    "build:flow": "echo \"// @flow\n\nexport * from '../src';\" > dist/raf-stub.cjs.js.flow",
     "prepublish": "yarn run build"
   }
 }
