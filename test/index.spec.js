@@ -1,5 +1,5 @@
 // @flow
-import now from 'performance-now';
+import now from '../src/now';
 import createStub, { replaceRaf } from '../src';
 import { defaultFrameDuration } from '../src/constants';
 

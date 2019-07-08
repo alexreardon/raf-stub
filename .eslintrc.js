@@ -6,15 +6,12 @@ module.exports = {
     'prettier/flowtype',
   ],
   parser: 'babel-eslint',
-  plugins: ['jest', 'flowtype'],
+  plugins: ['prettier', 'jest', 'flowtype'],
   env: {
     node: true,
     browser: true,
     es6: true,
     'jest/globals': true,
-  },
-  globals: {
-    AnimationFrameID: true,
   },
   // custom rules
   rules: {

@@ -1,8 +1,8 @@
 // @flow
-import now from 'performance-now';
 import { defaultFrameDuration } from './constants';
+import now from './now';
 
-type Stub = {|
+export type Stub = {|
   add: (cb: Function) => number,
   remove: (id: number) => void,
   flush: (duration?: number) => void,
@@ -115,6 +115,8 @@ export function replaceRaf(
 
   roots.forEach(root => {
     root.requestAnimationFrame = stub.add;
+
+    // $FlowFixMe - incorrect typing
     Object.assign(root.requestAnimationFrame, {
       step: stub.step,
       flush: stub.flush,
