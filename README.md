@@ -8,6 +8,7 @@
 Accurate and predictable testing of `requestAnimationFrame` and `cancelAnimationFrame`.
 
 **What can `raf-stub` enable you to do?**
+
 - Step through `requestionAnimationFrame` calls one frame at a time
 - Continue to call `requestionAnimationFrame` until there are no frames left. This lets you fast forward to the end of animations.
 - Clear out all animation frames without calling them
@@ -24,78 +25,78 @@ This is **not** designed to be a polyfill and is only intended for test code.
 import createStub from 'raf-stub';
 
 const render = () => {
-    return requestAnimationFrame(() => {
-        console.log('animate allthethings!');
-    });
-}
+  return requestAnimationFrame(() => {
+    console.log('animate allthethings!');
+  });
+};
 
 describe('stub', () => {
-    let stub;
+  let stub;
 
-    beforeEach(() => {
-        stub = createStub();
-        sinon.stub(global, 'requestAnimationFrame', stub.add);
-        sinon.stub(console, 'log');
-    });
+  beforeEach(() => {
+    stub = createStub();
+    sinon.stub(global, 'requestAnimationFrame', stub.add);
+    sinon.stub(console, 'log');
+  });
 
-    afterEach(() => {
-        global.requestAnimationFrame.restore();
-    });
+  afterEach(() => {
+    global.requestAnimationFrame.restore();
+  });
 
-    it('should allow us to execute requestAnimationFrame when we want', () => {
-        render();
+  it('should allow us to execute requestAnimationFrame when we want', () => {
+    render();
 
-        stub.step();
+    stub.step();
 
-        // console.log => animate allthethings!
-        expect(console.log.called).to.be(true);
-    });
+    // console.log => animate allthethings!
+    expect(console.log.called).to.be(true);
+  });
 
-    it('should allow us to cancel requestAnimationFrame when we want', () => {
-        const id = render();
+  it('should allow us to cancel requestAnimationFrame when we want', () => {
+    const id = render();
 
-        stub.remove(id);
-        stub.step();
+    stub.remove(id);
+    stub.step();
 
-        // *crickets*
-        expect(console.log.called).to.be(false);
-    });
+    // *crickets*
+    expect(console.log.called).to.be(false);
+  });
 });
 ```
 
 ### Replace existing `requestAnimationFrame`
 
 ```js
-import {replaceRaf} from 'raf-stub';
+import { replaceRaf } from 'raf-stub';
 
 // override requestAnimationFrame and cancelAnimationFrame with a stub
 replaceRaf();
 
 const render = () => {
-    return requestAnimationFrame(() => {
-        console.log('animate allthethings!');
-    });
-}
+  return requestAnimationFrame(() => {
+    console.log('animate allthethings!');
+  });
+};
 
 describe('stub', () => {
-    it('should allow us to execute requestAnimationFrame when we want', () => {
-        render();
+  it('should allow us to execute requestAnimationFrame when we want', () => {
+    render();
 
-        requestAnimationFrame.step();
+    requestAnimationFrame.step();
 
-        // console.log => animate allthethings!
-        expect(console.log.called).to.be(true);
-    });
+    // console.log => animate allthethings!
+    expect(console.log.called).to.be(true);
+  });
 
-    it('should allow us to cancel requestAnimationFrame when we want', () => {
-        const id = render();
+  it('should allow us to cancel requestAnimationFrame when we want', () => {
+    const id = render();
 
-        cancelAnimationFrame(id);
-        requestAnimationFrame.step();
+    cancelAnimationFrame(id);
+    requestAnimationFrame.step();
 
-        // *crickets*
-        expect(console.log.called).to.be(false);
-    });
+    // *crickets*
+    expect(console.log.called).to.be(false);
+  });
 });
 ```
 
@@ -110,17 +111,18 @@ yarn add raf-stub --dev
 ```
 
 ## stub
+
 Created by `createStub()`
 
 **type signature**
 
 ```js
 type Stub = {|
-    add: (cb: Function) => number,
-    remove: (id: number) => void,
-    flush: (duration?: number) => void,
-    reset: () => void,
-    step: (steps?: number, duration?: number) => void
+  add: (cb: Function) => number,
+  remove: (id: number) => void,
+  flush: (duration?: number) => void,
+  reset: () => void,
+  step: (steps?: number, duration?: number) => void,
 |};
 ```
 
@@ -145,7 +147,7 @@ const stub = createStub();
 **Advanced usage**
 
 ```js
-const frameDuration = 1000 / 60 * 2; // an extra slow frame
+const frameDuration = (1000 / 60) * 2; // an extra slow frame
 const startTime = performance.now() + 1000;
 const stub = createStub(frameDuration, startTime);
 ```
@@ -155,7 +157,7 @@ const stub = createStub(frameDuration, startTime);
 It schedules the callback to be called in the next frame.
 It returns an `id` that can be used to cancel the frame in the future. Same api as `requestAnimationFrame`.
 
-Callbacks will *not* automatically get called after a period of time. You need to explicitly release it using `stub.step()` or `stub.flush()`
+Callbacks will _not_ automatically get called after a period of time. You need to explicitly release it using `stub.step()` or `stub.flush()`
 
 **type signature**
 
@@ -229,10 +231,10 @@ Some times calls to `requestAnimationFrame` themselves call `requestAnimationFra
 ```js
 // this example will use the 'replaceRaf' syntax as it is a little clearer
 const callback = () => {
-    console.log('first callback')
+  console.log('first callback');
 
-    // second frame
-    requestAnimationFrame(() => console.log('second callback'));
+  // second frame
+  requestAnimationFrame(() => console.log('second callback'));
 };
 
 requestAnimationFrame(callback);
@@ -255,14 +257,14 @@ const startTime = performance.now();
 const frameDuration = 10;
 const longFrameDuration = frameDuration * 2;
 const stub = createStub(frameDuration, startTime);
-const callback = currentTime => console.log(`call time: ${startTime - currentTime}`);
+const callback = currentTime =>
+  console.log(`call time: ${startTime - currentTime}`);
 
 stub.add(callback);
 stub.step(1, longFrameDuration);
 
 // console.log => call time: 20
 ```
-
 
 ### `stub.flush()`
 
@@ -284,10 +286,10 @@ flush: (duration: ?number) => void
 // this example will use the 'replaceRaf' syntax as it is a little clearer
 
 const callback = () => {
-    console.log('first callback')
+  console.log('first callback');
 
-    // second frame
-    requestAnimationFrame(() => console.log('second callback'));
+  // second frame
+  requestAnimationFrame(() => console.log('second callback'));
 };
 
 requestAnimationFrame(callback);
@@ -302,7 +304,8 @@ api.flush();
 ```js
 const startTime = performance.now();
 const stub = createStub(100, startTime);
-const callback = currentTime => console.log(`call time: ${currentTime - startTime}`);
+const callback = currentTime =>
+  console.log(`call time: ${currentTime - startTime}`);
 
 stub.add(callback);
 stub.flush(200);
@@ -321,7 +324,6 @@ reset: () => void
 ```
 
 ```js
-
 const callback = () => console.log('first callback');
 
 requestAnimationFrame(callback);
@@ -354,13 +356,14 @@ function replaceRaf(roots?: Object[], options?: ?ReplaceRafOptions): void;
 - `options` => optional additional values to control the stub. These values are passed as the `frameDuration` and `startTime` arguments to `createStub()`
 
 `options`
+
 - `startTime` => see `createStub()`
 - `frameDuration` => see `createStub()`
 
-
 #### Basic usage
+
 ```js
-import {replaceRaf} from 'raf-stub';
+import { replaceRaf } from 'raf-stub';
 
 const root = {}; // could be window, global etc.
 replaceRaf([root]);
@@ -375,14 +378,17 @@ replaceRaf([window, global]);
 replaceRaf();
 
 // you can override the frameDuration and startTime for the stub
-replaceRaf([window], {frameDuration: 200, startTime: performance.now() + 1000 })
+replaceRaf([window], {
+  frameDuration: 200,
+  startTime: performance.now() + 1000,
+});
 ```
 
 After calling `replaceRaf` a root it's `requestAnimationFrame` and `cancelAnimationFrame` functions have been set and given new capabilities.
 
 ```js
 // assuming running in node so 'global' is the global rather than 'window'
-import {replaceRaf} from 'raf-stub';
+import { replaceRaf } from 'raf-stub';
 
 replaceRaf(global);
 
@@ -410,6 +416,7 @@ See **stub** for api documentation on `step()`, `flush()` and `reset()`.
 
 - Each call to `replaceRaf` will add a new stub to the `root`. If you want to have the same stub on multiple `roots` then pass them in at the same time (eg `replaceRaf([window, global])`).
 - If you do a one time setup of `replaceRaf()` in a test setup file you will remember to clear the stub after each test.
+
 ```js
 requestAnimationFrame.reset();
 ```
@@ -419,7 +426,7 @@ requestAnimationFrame.reset();
 #### ES6 syntax:
 
 ```js
-import stub, {replaceRaf} from 'raf-stub';
+import stub, { replaceRaf } from 'raf-stub';
 ```
 
 #### ES5 syntax (compatible with node.js `require`);
@@ -443,7 +450,7 @@ This project used [Semantic versioning 2.0.0](http://semver.org/) to ensure a co
 - `Y`: new features (non breaking)
 - `Z`: patches
 
-A safe `raf-stub` `package.json` dependency would therefore be anything that allows changes to the *minor* or *patch* version
+A safe `raf-stub` `package.json` dependency would therefore be anything that allows changes to the _minor_ or _patch_ version
 
 ## Frame `currentTime` precision warning
 
@@ -462,7 +469,7 @@ stub.step();
 By default `frameDuration` is `1000 / 60` and startTime is `performance.now`. Both of these numbers are ugly decimals (eg `16.6666667`). When they are added together in `.step()` or `.flush()` this can cause [known precision issues in JavaScript](https://github.com/getify/You-Dont-Know-JS/blob/master/types%20%26%20grammar/ch2.md#small-decimal-values). You can find some further discussion about it's impact [here](https://github.com/alexreardon/raf-stub/issues/42).
 
 **Work arounds**
-If you want to assert the current time inside of a callback - be sure to *add* the expected time values:
+If you want to assert the current time inside of a callback - be sure to _add_ the expected time values:
 
 ```js
 const frameDuration = 1000 / 60;
@@ -517,7 +524,7 @@ The first argument to a `requestAnimationFrame` callback is a [DOMHighResTimeSta
 
 ```js
 requestAnimationFrame(currentTime => {
-    console.log('the current time is', currentTime);
+  console.log('the current time is', currentTime);
 });
 ```
 
@@ -532,11 +539,11 @@ const startTime = performance.now();
 const stub = createStub(slowFrameDuration, startTime);
 
 stub.add(currentTime => {
-    if(startTime + currentTime > idealFrameDuration) {
-        console.log('a slow frame occured');
-    } else {
-        console.log('a standard frame occured');
-    }
+  if (startTime + currentTime > idealFrameDuration) {
+    console.log('a slow frame occured');
+  } else {
+    console.log('a standard frame occured');
+  }
 });
 
 stub.step();
@@ -547,7 +554,8 @@ stub.step();
 **Controlling the `frameDuration` and `startTime`:**
 
 ```js
-const callback = currentTime => console.log(`time taken: ${currentTime - startTime}`);
+const callback = currentTime =>
+  console.log(`time taken: ${currentTime - startTime}`);
 
 // this will set the frameDuration and startTime for all stub calls. They can be overwritted with specific function calls
 const stub = createStub(100, performance.now());
@@ -577,13 +585,13 @@ Let's say you use a library that uses request animation frame
 
 ```js
 // library.js
-const ponyfill = callback => setTimeout(callback, 1000/ 60);
+const ponyfill = callback => setTimeout(callback, 1000 / 60);
 const raf = requestAnimationFrame || ponyfill;
 
-export default function () {
-    raf(() => {
-        console.log('render allthethings!');
-    });
+export default function() {
+  raf(() => {
+    console.log('render allthethings!');
+  });
 }
 ```
 
@@ -597,41 +605,44 @@ import createStub from 'raf-stub';
 import render from 'library';
 
 describe('app', () => {
-    const stub = createStub();
+  const stub = createStub();
 
-    beforeEach(() => {
-        sinon.stub(global, 'requestAnimationFrame', stub.add);
-        sinon.stub(console, 'log');
-    });
+  beforeEach(() => {
+    sinon.stub(global, 'requestAnimationFrame', stub.add);
+    sinon.stub(console, 'log');
+  });
 
-    it('should allow us to execute requestAnimationFrame when we want', () => {
-        render();
+  it('should allow us to execute requestAnimationFrame when we want', () => {
+    render();
 
-        stub.step();
+    stub.step();
 
-        // *crickets* - not executed! :(
-        expect(console.log.called).to.be(true); // failure
-    });
+    // *crickets* - not executed! :(
+    expect(console.log.called).to.be(true); // failure
+  });
 });
 ```
 
 This won't work when:
 
 - `requestAnimationFrame` **does exist**
+
 ```js
-raf === requestAnimationFrame
+raf === requestAnimationFrame;
 ```
 
 This is because doing `sinon.stub(global, 'requestAnimationFrame', stub.add)` will change the reference that `requestAnimationFrame` points to. What that means is that the library when it calls `raf` will call the original `requestAnimationFrame` and not your stub
 
 - `requestAnimationFrame` **does not exist**
+
 ```js
-raf === ponyfill
+raf === ponyfill;
 ```
 
 If the ponyfill is being used then we cannot override the reference to `raf` as it is not exposed. Stubbing `requestAnimationFrame` will not help because the library uses a reference to the ponyfill.
 
 #### How can we get this working?
+
 `replaceRaf` to the rescue!
 
 before any of your tests code is executed, including module imports, then take the opportunity to set up your stub!
@@ -647,10 +658,10 @@ requestAnimationFrame = stub.add;
 requestAnimationFrame = stub.remove;
 
 // add additional helpers to requestAnimationFrame:
- Object.assign(requestAnimationFrame, {
-    step: stub.step,
-    flush: stub.flush,
-    reset: stub.reset
+Object.assign(requestAnimationFrame, {
+  step: stub.step,
+  flush: stub.flush,
+  reset: stub.reset,
 });
 
 // option 2: use replaceRaf! (this does option1 for you)
@@ -664,32 +675,34 @@ Then everything will work as expected!
 import render from 'library';
 
 describe('app', () => {
-    const stub = createStub();
+  const stub = createStub();
 
-    afterEach(() => {
-        requestAnimationFrame.reset();
-    });
+  afterEach(() => {
+    requestAnimationFrame.reset();
+  });
 
-    it('should allow us to execute requestAnimationFrame when we want', () => {
-        render();
+  it('should allow us to execute requestAnimationFrame when we want', () => {
+    render();
 
-        requestAnimationFrame.step();
+    requestAnimationFrame.step();
 
-        // console.log => 'render allthethings!'
-        expect(console.log.called).to.be(true);
-    });
+    // console.log => 'render allthethings!'
+    expect(console.log.called).to.be(true);
+  });
 });
 ```
 
 ### Full `mocha` end-to-end setup
+
 For when you need to make a stub which can be used by a library (or module that ponyfills `requestAnimationFrame` at compile time)
 
 **package.json**
+
 ```json
 {
-    "scripts": {
-        "test": "mocha render.test.js --presets es2015 --require test-setup.js"
-    }
+  "scripts": {
+    "test": "mocha render.test.js --presets es2015 --require test-setup.js"
+  }
 }
 ```
 
@@ -698,43 +711,48 @@ For when you need to make a stub which can be used by a library (or module that 
 3. `--require test-setup.js` this is our file where we will setup our stub
 
 **test-setup.js**
+
 ```js
 // using node require as the babel tranform is not applied to this file
 require('raf-stub').replaceRaf();
 ```
 
 **render.js**
+
 ```js
 const ponyfill = callback => setTimeout(callback, 1000 / 60);
 const raf = requestAnimationFrame || ponyfill;
 
 export default function() {
-    raf(() => console.log('done'));
+  raf(() => console.log('done'));
 }
 ```
 
 **render.test.js**
+
 ```js
 import render from './render';
 
 describe('render', () => {
-    it('should log to the console', () => {
-        render();
+  it('should log to the console', () => {
+    render();
 
-        requestAnimationFrame.step();
+    requestAnimationFrame.step();
 
-        // console.log => 'done';
-        expect(console.log.called).to.be(true);
-    });
+    // console.log => 'done';
+    expect(console.log.called).to.be(true);
+  });
 });
 ```
 
 **command line**
+
 ```
 npm test
 ```
 
 ## Tests for `raf-stub`
+
 To run the tests for this library simply execute:
 
 ```
@@ -748,82 +766,83 @@ Let's say you wanted to test some code that uses `requestAnimationFrame`. How wo
 
 ```js
 describe('app', () => {
-    let clock;
+  let clock;
 
-    beforeEach(() => {
-        clock = sinon.useFakeTimers();
-        sinon.stub(window, 'requestAnimationFrame', setTimeout);
-        sinon.stub(window, 'cancelAnimationFrame', clearTimeout);
-    });
+  beforeEach(() => {
+    clock = sinon.useFakeTimers();
+    sinon.stub(window, 'requestAnimationFrame', setTimeout);
+    sinon.stub(window, 'cancelAnimationFrame', clearTimeout);
+  });
 
-    afterEach(() => {
-        clock.restore();
-        window.requestAnimationFrame.restore();
-        window.cancelAnimationFrame.restore();
-    });
+  afterEach(() => {
+    clock.restore();
+    window.requestAnimationFrame.restore();
+    window.cancelAnimationFrame.restore();
+  });
 
-    it('should allow us to execute requestAnimationFrame when we want', () => {
-        const callback = () => console.log('success');
+  it('should allow us to execute requestAnimationFrame when we want', () => {
+    const callback = () => console.log('success');
 
-        requestAnimationFrame(callback);
+    requestAnimationFrame(callback);
 
-        // fast forward set timeout
-        clock.tick();
+    // fast forward set timeout
+    clock.tick();
 
-        // console.log => 'success'
-        expect(console.log.called).to.be(true);
-    });
+    // console.log => 'success'
+    expect(console.log.called).to.be(true);
+  });
 });
 ```
 
 We are all good right? Well sort of. For this basic example `setTimeout` was sufficient. Let's have a look at a few more cases where `setTimeout` is not ideal.
 
-*The following examples will assume the same setup as the above example unless otherwise specified*
+_The following examples will assume the same setup as the above example unless otherwise specified_
 
 ### Case 1: mixture of `setTimeout` and `requestAnimationFrame`
 
 ```js
 it('should allow us to execute requestAnimationFrame when we want', () => {
-    const callback = () => {
-        setTimeout(() => {
-            console.log('success');
-        });
-    }
+  const callback = () => {
+    setTimeout(() => {
+      console.log('success');
+    });
+  };
 
-    requestAnimationFrame(callback);
+  requestAnimationFrame(callback);
 
-    // fast forward requestAnimationFrame
-    clock.tick();
+  // fast forward requestAnimationFrame
+  clock.tick();
 
-    // fast forward setTimeout
-    clock.tick();
+  // fast forward setTimeout
+  clock.tick();
 
-    // console.log => 'success'
-    expect(console.log.called).to.be(true);
+  // console.log => 'success'
+  expect(console.log.called).to.be(true);
 });
 ```
 
 Because both `setTimeout` and `requestAnimationFrame` use `setTimeout` the way we **step** through an animation frame is the same way we **step** through a timeout. This can become hard to reason about in larger functions where there may be a large combination of `setTimeout` and `requestAnimationFrame` code. Having a shared mechanism is prone to misunderstandings. This is solved by `stub.step()` and `stub.flush()`
 
 ### Case 2: nested requestAnimationFrames
+
 ```js
 it('should allow us to execute requestAnimationFrame when we want', () => {
-    const callback = () => {
-        requestAnimationFrame(() => {
-            console.log('success');
-        });
-    }
+  const callback = () => {
+    requestAnimationFrame(() => {
+      console.log('success');
+    });
+  };
 
-    requestAnimationFrame(callback);
+  requestAnimationFrame(callback);
 
-    // fast forward requestAnimationFrame
-    clock.tick();
+  // fast forward requestAnimationFrame
+  clock.tick();
 
-    // fast forward requestAnimationFrame
-    clock.tick();
+  // fast forward requestAnimationFrame
+  clock.tick();
 
-    // console.log => 'success'
-    expect(console.log.called).to.be(true);
+  // console.log => 'success'
+  expect(console.log.called).to.be(true);
 });
 ```
 
@@ -833,23 +852,22 @@ Let's go a bit deeper:
 
 ```js
 it('should allow us to execute requestAnimationFrame when we want', () => {
-    const render = (iterations = 0) => {
-        if(iterations > 100 * Math.random()) {
-            return console.log('done');
-        }
-        return requestAnimationFrame(() => {
-            render(iterations + 1);
-        });
-    };
+  const render = (iterations = 0) => {
+    if (iterations > 100 * Math.random()) {
+      return console.log('done');
+    }
+    return requestAnimationFrame(() => {
+      render(iterations + 1);
+    });
+  };
 
-    render();
+  render();
 
+  // step through the animation frames
+  clock.tick(100000);
 
-    // step through the animation frames
-    clock.tick(100000);
-
-    // console.log => 'success'
-    expect(console.log.called).to.be(true);
+  // console.log => 'success'
+  expect(console.log.called).to.be(true);
 });
 ```
 
@@ -859,31 +877,31 @@ The problem we have here is that we do not know exactly how many times `render` 
 
 ```js
 it('should log to the console', () => {
-    const callback = () => {
-        console.log('test 1: first frame');
-        // requests another frame
-        requestAnimationFrame(() => {
-            console.log('test 1: second frame');
-        });
-    };
+  const callback = () => {
+    console.log('test 1: first frame');
+    // requests another frame
+    requestAnimationFrame(() => {
+      console.log('test 1: second frame');
+    });
+  };
 
-    requestAnimationFrame(callback);
-    clock.tick();
+  requestAnimationFrame(callback);
+  clock.tick();
 
-    // console.log => 'test 1: first frame'
-    expect(console.log.calledOnce).to.be(true);
-    // note the second frame was not cleared
+  // console.log => 'test 1: first frame'
+  expect(console.log.calledOnce).to.be(true);
+  // note the second frame was not cleared
 });
 
 it('should also log to the console', () => {
-    const callback = () => console.log('test 2: first frame');
+  const callback = () => console.log('test 2: first frame');
 
-    requestAnimationFrame(callback);
-    clock.tick();
+  requestAnimationFrame(callback);
+  clock.tick();
 
-    // console.log => 'test 1: second frame' -> leaked from first test
-    // console.log => 'test 2: first frame'
-    expect(console.log.calledOnce).to.be(true); // failure
+  // console.log => 'test 1: second frame' -> leaked from first test
+  // console.log => 'test 2: first frame'
+  expect(console.log.calledOnce).to.be(true); // failure
 });
 ```
 
@@ -891,49 +909,49 @@ What happened here? We did not clear out all of the`requestAnimationFrame`'s in 
 
 ```js
 describe('app', () => {
-    let clock;
+  let clock;
 
-    beforeEach(() => {
-        clock = sinon.useFakeTimers();
-        sinon.stub(window, 'requestAnimationFrame', setTimeout);
-        sinon.stub(window, 'cancelAnimationFrame', clearTimeout);
-    });
+  beforeEach(() => {
+    clock = sinon.useFakeTimers();
+    sinon.stub(window, 'requestAnimationFrame', setTimeout);
+    sinon.stub(window, 'cancelAnimationFrame', clearTimeout);
+  });
 
-    afterEach(() => {
-        // need to reset the clock (this actually flushes the clock)
-        clock.tick(1000000);
+  afterEach(() => {
+    // need to reset the clock (this actually flushes the clock)
+    clock.tick(1000000);
 
-        // console.log => 'test 1: second frame'
+    // console.log => 'test 1: second frame'
 
-        clock.restore();
-        window.requestAnimationFrame.restore();
-        window.cancelAnimationFrame.restore();
-    });
+    clock.restore();
+    window.requestAnimationFrame.restore();
+    window.cancelAnimationFrame.restore();
+  });
 
-    it('test 1', () => {
-        const callback = () => {
-            console.log('test 1: first frame');
-            requestAnimationFrame(() => {
-                console.log('test 1: second frame');
-            });
-        };
+  it('test 1', () => {
+    const callback = () => {
+      console.log('test 1: first frame');
+      requestAnimationFrame(() => {
+        console.log('test 1: second frame');
+      });
+    };
 
-        requestAnimationFrame(callback);
+    requestAnimationFrame(callback);
 
-        // console.log => 'test 1: first frame'
-        expect(console.log.called).to.be(true);
+    // console.log => 'test 1: first frame'
+    expect(console.log.called).to.be(true);
 
-        // note the second frame was not cleared
-    });
+    // note the second frame was not cleared
+  });
 
-    it('test 2', () => {
-        const callback = () => console.log('test 2: first frame');
+  it('test 2', () => {
+    const callback = () => console.log('test 2: first frame');
 
-        requestAnimationFrame(callback);
+    requestAnimationFrame(callback);
 
-        // console.log => 'test 1: second frame'
-        expect(console.log.calledOnce).to.be(true); // now passing
-    });
+    // console.log => 'test 1: second frame'
+    expect(console.log.calledOnce).to.be(true); // now passing
+  });
 });
 ```
 
@@ -947,27 +965,25 @@ Lets say you have setup that looks like this:
 const idealFrameDuration = 1000 / 60;
 
 const startAnimation = startTime => {
-    let previousTime = startTime;
+  let previousTime = startTime;
 
-    const loop = currentTime => {
-        if(!currentTime) {
-            throw new Error('could not get the current time');
-        }
-
-        const diff = currentTime - previousTime;
-        if(diff > idealFrameDuration) {
-            console.log('a slow frame occurred');
-        } else {
-            console.log('a normal frame occurred');
-        }
-
-        previousTime = currentTime;
-        requestAnimationFrame(loop);
+  const loop = currentTime => {
+    if (!currentTime) {
+      throw new Error('could not get the current time');
     }
 
+    const diff = currentTime - previousTime;
+    if (diff > idealFrameDuration) {
+      console.log('a slow frame occurred');
+    } else {
+      console.log('a normal frame occurred');
+    }
+
+    previousTime = currentTime;
     requestAnimationFrame(loop);
+  };
 
-
+  requestAnimationFrame(loop);
 };
 
 startAnimation(performance.now());
@@ -977,28 +993,28 @@ How could we test the behaviour of the `loop` function? Let's try with `setTimeo
 
 ```js
 describe('startAnimation', () => {
-    let clock;
+  let clock;
 
-    beforeEach(() => {
-        clock = sinon.useFakeTimers();
-        sinon.stub(window, 'requestAnimationFrame', setTimeout);
-        sinon.stub(window, 'cancelAnimationFrame', clearTimeout);
-    });
+  beforeEach(() => {
+    clock = sinon.useFakeTimers();
+    sinon.stub(window, 'requestAnimationFrame', setTimeout);
+    sinon.stub(window, 'cancelAnimationFrame', clearTimeout);
+  });
 
-    afterEach(() => {
-        clock.restore();
-        window.requestAnimationFrame.restore();
-        window.cancelAnimationFrame.restore();
-    });
+  afterEach(() => {
+    clock.restore();
+    window.requestAnimationFrame.restore();
+    window.cancelAnimationFrame.restore();
+  });
 
-    it('should pass the updated time to loop', () => {
-        const startTime = performance.now();
-        startAnimation(startTime);
+  it('should pass the updated time to loop', () => {
+    const startTime = performance.now();
+    startAnimation(startTime);
 
-        clock.tick();
+    clock.tick();
 
-        // Error => 'could not get the current time'
-    });
+    // Error => 'could not get the current time'
+  });
 });
 ```
 
@@ -1007,34 +1023,28 @@ What happened here? By default `setTimeout` does not pass any argument as the fi
 How can `raf-stub` help us?
 
 ```js
-import {replaceRaf} from 'raf-stub';
+import { replaceRaf } from 'raf-stub';
 const startTime = performance.now();
 const idealFrameDuration = 1000 / 60;
 
-replaceRaf([], {startTime});
+replaceRaf([], { startTime });
 
 describe('startAnimation', () => {
+  afterEach(() => {
+    requestAnimationFrame.reset();
+  });
 
-    afterEach(() => {
-        requestAnimationFrame.reset();
-    });
+  it('should pass the updated time to loop', () => {
+    const slowFrameDuration = idealFrameDuration * 2;
+    startAnimation(startTime);
 
-    it('should pass the updated time to loop', () => {
+    requestAnimationFrame.step(1, idealFrameDuration);
+    // console.log => 'a normal frame occurred'
+    expect(console.log.calledOnce).to.be(true);
 
-        const slowFrameDuration = idealFrameDuration * 2;
-        startAnimation(startTime);
-
-        requestAnimationFrame.step(1, idealFrameDuration);
-        // console.log => 'a normal frame occurred'
-        expect(console.log.calledOnce).to.be(true);
-
-
-        requestAnimationFrame.step(1, slowFrameDuration);
-        // console.log => 'a slow frame occurred'
-        expect(console.log.calledTwice).to.be(true);
-    });
+    requestAnimationFrame.step(1, slowFrameDuration);
+    // console.log => 'a slow frame occurred'
+    expect(console.log.calledTwice).to.be(true);
+  });
 });
 ```
-
-
-

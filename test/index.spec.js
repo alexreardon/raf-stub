@@ -59,10 +59,8 @@ describe('instance', () => {
 
   describe('add', () => {
     it('should return a unique id for each callback', () => {
-      const callback1 = () => {
-      };
-      const callback2 = () => {
-      };
+      const callback1 = () => {};
+      const callback2 = () => {};
 
       const id1: number = api.add(callback1);
       const id2: number = api.add(callback2);
@@ -179,7 +177,7 @@ describe('instance', () => {
           returnA,
         };
         let result;
-        const callback = jest.fn().mockImplementation(function () {
+        const callback = jest.fn().mockImplementation(function() {
           result = bar.returnA();
         });
 
@@ -194,7 +192,7 @@ describe('instance', () => {
           a: 5,
         };
         let result: number;
-        const callback = jest.fn().mockImplementation(function () {
+        const callback = jest.fn().mockImplementation(function() {
           result = returnA.call(hasA);
         });
 
@@ -209,7 +207,7 @@ describe('instance', () => {
           a: 5,
         };
         let result: number;
-        const callback = jest.fn().mockImplementation(function () {
+        const callback = jest.fn().mockImplementation(function() {
           result = returnA.bind(hasA)();
         });
 
@@ -267,7 +265,9 @@ describe('instance', () => {
         api.step(1, childDuration);
 
         expect(parent).toHaveBeenCalledWith(startTime + parentDuration);
-        expect(child).toHaveBeenCalledWith(startTime + parentDuration + childDuration);
+        expect(child).toHaveBeenCalledWith(
+          startTime + parentDuration + childDuration,
+        );
       });
     });
   });
@@ -309,7 +309,9 @@ describe('instance', () => {
 
       expect(parent).toHaveBeenCalledWith(startTime + frameDuration);
       // double adding to replicate multiple addition precision issues
-      expect(child).toHaveBeenCalledWith(startTime + frameDuration + frameDuration);
+      expect(child).toHaveBeenCalledWith(
+        startTime + frameDuration + frameDuration,
+      );
     });
 
     it('should allow you to flush callbacks with a provided frame duration', () => {
@@ -324,9 +326,10 @@ describe('instance', () => {
 
       expect(parent).toHaveBeenCalledWith(startTime + customDuration);
       // double adding to replicate multiple addition precision issues
-      expect(child).toHaveBeenCalledWith(startTime + customDuration + customDuration);
+      expect(child).toHaveBeenCalledWith(
+        startTime + customDuration + customDuration,
+      );
     });
-
   });
 
   describe('reset', () => {
@@ -518,7 +521,9 @@ describe('replaceRaf', () => {
       root.requestAnimationFrame(callback);
       root.requestAnimationFrame.flush();
 
-      expect(callback).toHaveBeenCalledWith(customStartTime + defaultFrameDuration);
+      expect(callback).toHaveBeenCalledWith(
+        customStartTime + defaultFrameDuration,
+      );
     });
   });
 });

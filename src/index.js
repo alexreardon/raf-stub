@@ -7,15 +7,18 @@ type Stub = {|
   remove: (id: number) => void,
   flush: (duration?: number) => void,
   reset: () => void,
-  step: (steps?: number, duration?: number) => void
+  step: (steps?: number, duration?: number) => void,
 |};
 
 type Frame = {|
   id: number,
-  callback: Function
+  callback: Function,
 |};
 
-export default function createStub (frameDuration: number = defaultFrameDuration, startTime: number = now()): Stub {
+export default function createStub(
+  frameDuration: number = defaultFrameDuration,
+  startTime: number = now(),
+): Stub {
   const frames: Frame[] = [];
   let frameId: number = 0;
   let currentTime: number = startTime;
@@ -59,7 +62,10 @@ export default function createStub (frameDuration: number = defaultFrameDuration
     currentTime = startTime;
   };
 
-  const step = (steps?: number = 1, duration?: number = frameDuration): void => {
+  const step = (
+    steps?: number = 1,
+    duration?: number = frameDuration,
+  ): void => {
     if (steps === 0) {
       return;
     }
@@ -88,11 +94,17 @@ export default function createStub (frameDuration: number = defaultFrameDuration
 }
 
 type ReplaceRafOptions = {
-    frameDuration?: number,
-    startTime?: number
+  frameDuration?: number,
+  startTime?: number,
 };
 
-export function replaceRaf(roots?: Object[] = [], { frameDuration = defaultFrameDuration, startTime = now() }: ReplaceRafOptions = {}) {
+export function replaceRaf(
+  roots?: Object[] = [],
+  {
+    frameDuration = defaultFrameDuration,
+    startTime = now(),
+  }: ReplaceRafOptions = {},
+) {
   // automatic usage of 'window' or 'global' if no roots are provided
   if (!roots.length) {
     roots.push(typeof window !== 'undefined' ? window : global);
