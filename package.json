@@ -1,6 +1,6 @@
 {
   "name": "raf-stub",
-  "version": "2.0.2",
+  "version": "3.0.0-alpha.1",
   "description": "Accurate and predictable testing of requestAnimationFrame and cancelAnimationFrame",
   "main": "dist/raf-stub.cjs.js",
   "module": "dist/raf-stub.esm.js",
